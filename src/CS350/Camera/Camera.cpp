@@ -53,48 +53,4 @@ namespace CS350
 
 		return view_mtx;
 	}
-
-	Frustum Camera::GetViewFrustum() const
-	{
-		glm::mat4 trans_matrix = owner_world_trans_.GetMatrix();
-		glm::vec3 pos = owner_world_trans_.position;
-		
-		glm::vec4 view_4 = trans_matrix * glm::vec4(0, 0, -1, 0);
-		glm::vec4 up_4 = trans_matrix * glm::vec4(0, 1, 0, 0);
-		glm::vec4 right_4 = trans_matrix * glm::vec4(1, 0, 0, 0);
-
-		glm::vec3 view = glm::normalize(glm::vec3(view_4));
-		glm::vec3 up = glm::normalize(glm::vec3(up_4));
-		glm::vec3 right = glm::normalize(glm::vec3(right_4));
-		
-		float frustum_fov = fov * 0.5f;
-			
-		float height_near = 2 * glm::tan(frustum_fov) * near_plane;
-		float width_near = height_near * aspect_ratio;
-			
-		float height_far = 2 * glm::tan(frustum_fov) * far_plane;
-		float width_far = height_far * aspect_ratio;
-
-		glm::vec3 near_center = pos + (near_plane) * view;
-		glm::vec3 far_center = pos + (far_plane) * view;
-
-		glm::vec3 ntl = near_center + -(width_near / 2) * right +  (height_near / 2) * up;
-		glm::vec3 ntr = near_center +  (width_near / 2) * right +  (height_near / 2) * up;
-		glm::vec3 nbl = near_center + -(width_near / 2) * right + -(height_near / 2) * up;
-		glm::vec3 nbr = near_center +  (width_near / 2) * right + -(height_near / 2) * up;
-		glm::vec3 ftl = far_center  + -(width_far / 2)  * right +  (height_far / 2)  * up;
-		glm::vec3 ftr = far_center  +  (width_far / 2)  * right +  (height_far / 2)  * up;
-		glm::vec3 fbl = far_center  + -(width_far / 2)  * right + -(height_far / 2)  * up;
-		glm::vec3 fbr = far_center  +  (width_far / 2)  * right + -(height_far / 2)  * up;
-
-		return 
-		{
-			ntl, glm::normalize(glm::cross(nbr - ntl, nbl - ntl)),
-			ftl, glm::normalize(glm::cross(fbr - ftl, ftr - ftl)),
-			ftl, glm::normalize(glm::cross(nbl - ftl, fbl - ftl)),
-			ntr, glm::normalize(glm::cross(fbr - ntr, nbr - ntr)),
-			ntl, glm::normalize(glm::cross(ftr - ntl, ntr - ntl)),
-			nbl, glm::normalize(glm::cross(fbr - nbl, fbl - nbl)),
-		};
-	}
 }

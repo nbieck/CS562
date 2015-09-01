@@ -9,7 +9,6 @@
 #define CS350_CAMERA_H_
 
 #include "../Transformation/Transformation.h"
-#include "../Math/Frustum.h"
 
 #include <glm/glm.hpp>
 
@@ -28,8 +27,6 @@ namespace CS350
 
 		glm::mat4 GetViewMatrix() const;
 		glm::mat4 GetProjectionMatrix() const;
-
-		Frustum GetViewFrustum() const;
 
 	private:
 

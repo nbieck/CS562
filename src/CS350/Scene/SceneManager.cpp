@@ -21,8 +21,7 @@
 namespace CS350
 {
 	SceneManager::SceneManager(GraphicsManager& gfx, FrameTimer& time)
-		: gfx_(gfx), time_(time), scene_root_(std::make_shared<Object>()), obj_velocity(-2.3153, 3.11233, -4.1),
-		simulation_paused(false), single_step(false)
+		: gfx_(gfx), time_(time), scene_root_(std::make_shared<Object>())
 	{}
 
 	void SceneManager::InitializeScene()
@@ -37,9 +36,6 @@ namespace CS350
 
 		shader->SetUniform("Material.roughness", 0.1f);
 		shader->SetUniform("Material.F_0", glm::vec4(1, 1, 1, 1));
-
-		dynamic_obj = AddObject(glm::vec3(0), shader, sphere);
-		dynamic_obj->drawable->color = glm::vec4(0, 1, 1, 1);
 
 		AddObject(glm::vec3(4, 1, -1), shader, box);
 		AddObject(glm::vec3(-2, 0, 4), shader, cone);
@@ -65,7 +61,7 @@ namespace CS350
 		scene_root_->AddChild(drawable_obj);
 		std::shared_ptr<Drawable> draw = std::make_shared<Drawable>(drawable_obj->GetGlobalTrans(), shader, geometry);
 		drawable_obj->drawable = draw;
-	
+
 		gfx_.RegisterDrawable(draw);
 
 		return drawable_obj;
@@ -78,16 +74,6 @@ namespace CS350
 
 	void SceneManager::Update()
 	{
-		if (dynamic_obj)
-		{
-			if (!simulation_paused)
-				AdvanceSimulation(static_cast<float>(time_.dt()));
-			else if (single_step)
-			{
-				AdvanceSimulation(0.016f);
-				single_step = false;
-			}
-		}
 	}
 
 	std::vector<std::shared_ptr<Object>> SceneManager::GetObjectList()
@@ -107,57 +93,5 @@ namespace CS350
 		{
 			CompObjListRec(child, list);
 		}
-	}
-
-	void SceneManager::SetSceneExtents(glm::vec3 min, glm::vec3 max)
-	{
-		scene_min = min;
-		scene_max = max;
-	}
-
-	void SceneManager::ReverseSimulation()
-	{
-		obj_velocity = -obj_velocity;
-	}
-
-	void SceneManager::AdvanceSimulation(float dt)
-	{
-			auto trans = dynamic_obj->GetLocalTrans();
-
-			if (trans.position.x > scene_max.x)
-			{
-				obj_velocity.x = -obj_velocity.x;
-				trans.position.x = scene_max.x;
-			}
-			if (trans.position.x < scene_min.x)
-			{
-				obj_velocity.x = -obj_velocity.x;
-				trans.position.x = scene_min.x;
-			}
-			
-			if (trans.position.y > scene_max.y)
-			{
-				obj_velocity.y = -obj_velocity.y;
-				trans.position.y = scene_max.y;
-			}
-			if (trans.position.y < scene_min.y)
-			{
-				obj_velocity.y = -obj_velocity.y;
-				trans.position.y = scene_min.y;
-			}
-			
-			if (trans.position.z > scene_max.z)
-			{
-				obj_velocity.z = -obj_velocity.z;
-				trans.position.z = scene_max.z;
-			}
-			if (trans.position.z < scene_min.z)
-			{
-				obj_velocity.z = -obj_velocity.z;
-				trans.position.z = scene_min.z;
-			}
-
-			trans.position += obj_velocity * dt;
-			dynamic_obj->SetLocalTrans(trans);
 	}
 }
