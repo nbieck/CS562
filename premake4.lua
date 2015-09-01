@@ -5,8 +5,8 @@
 -- set a bunch of variables here, so that the script can be easily modified
 
 -- Any variable that is a table should have one entry per project, as it stores per-project settings
-SOLUTION_NAME_ = "CS350 Framework"
-PROJECTS_ = { "CS350" }
+SOLUTION_NAME_ = "CS562"
+PROJECTS_ = { "CS562" }
 KINDS = {"ConsoleApp"}
 OBJDIR = "obj"
 BINDIR = "bin"
