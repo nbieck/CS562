@@ -13,7 +13,6 @@
 #include "../Graphics/GraphicsManager.h"
 #include "../Scene/SceneManager.h"
 #include "../CameraController/CameraController.h"
-#include "../Bounding Volumes/BoundingVolumeManager.h"
 #include "../FrameTimer/FrameTimer.h"
 #include "../GuiManager/GuiManager.h"
 
@@ -34,7 +33,6 @@ namespace CS350
 		GraphicsManager gfx;
 		SceneManager scene;
 		CameraController cam_control;
-		BoundingVolumeManager bound_vols;
 		FrameTimer time;
 		GuiManager gui;
 

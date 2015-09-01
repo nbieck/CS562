@@ -7,8 +7,6 @@
 
 #include "Application\Application.h"
 
-#include "Bounding Volumes\AABB.h"
-
 int main(int argc, char **argv)
 {
 	try

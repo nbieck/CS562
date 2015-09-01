@@ -13,7 +13,6 @@
 #include "../Drawable/Drawable.h"
 #include "../Camera/Camera.h"
 #include "../Light/Light.h"
-#include "../Bounding Volumes/BoundingVolumeManager.h"
 
 #include <memory>
 
@@ -29,7 +28,7 @@ namespace CS350
 	{
 	public:
 
-		GraphicsManager(int width, int height, WindowManager& window, BoundingVolumeManager& bvs);
+		GraphicsManager(int width, int height, WindowManager& window);
 		~GraphicsManager();
 
 		void Update();

@@ -33,7 +33,6 @@ namespace CS350
 	{
 		GraphicsManager& owner;
 		WindowManager& window;
-		BoundingVolumeManager& bvs;
 		Drawmode mode;
 
 		int width;
@@ -49,8 +48,8 @@ namespace CS350
 		std::shared_ptr<VertexArray> plane_vao;
 		std::shared_ptr<ShaderProgram> plane_shader;
 
-		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window, BoundingVolumeManager& bvs)
-			: width(width), height(height), owner(owner), window(window), bvs(bvs), mode(Drawmode::Solid)
+		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid)
 		{
 
 		}
@@ -247,8 +246,8 @@ namespace CS350
 
 	GraphicsManager::~GraphicsManager() = default;
 
-	GraphicsManager::GraphicsManager(int width, int height, WindowManager& window, BoundingVolumeManager& bvs)
-		: impl(std::make_unique<PImpl>(width, height, *this, window, bvs))
+	GraphicsManager::GraphicsManager(int width, int height, WindowManager& window)
+		: impl(std::make_unique<PImpl>(width, height, *this, window))
 	{
 		impl->CreateContext();
 		impl->InitGL();
@@ -292,8 +291,6 @@ namespace CS350
 				gl::Enable(gl::CULL_FACE);
 				gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
 			}
-
-			impl->bvs.Draw(view, proj, current_cam->GetViewFrustum());
 
 			impl->DrawPlanes(view, proj);
 		}

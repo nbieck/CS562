@@ -12,7 +12,6 @@
 #include "../Camera/Camera.h"
 #include "../Drawable/Drawable.h"
 #include "../Light/Light.h"
-#include "../Bounding Volumes/AABB.h"
 
 #include <memory>
 #include <list>
@@ -36,7 +35,6 @@ namespace CS350
 		std::shared_ptr<Camera> cam;
 		std::shared_ptr<Drawable> drawable;
 		std::shared_ptr<Light> light;
-		std::weak_ptr<AABB> bounding_volume;
 
 		const std::list<std::shared_ptr<Object>>& GetChildren() const;
 
