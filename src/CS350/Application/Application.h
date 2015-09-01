@@ -38,9 +38,6 @@ namespace CS350
 
 	private:
 
-		size_t ObjFilesInDirectory(const char* directory, char*& files) const;
-		void FreeFilenames(char* files) const;
-
 		bool running_;
 	};
 }
