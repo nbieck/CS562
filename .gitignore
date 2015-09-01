@@ -8,4 +8,5 @@ projects
 *.sdf
 *.opensdf
 *.suo
+*.swp
 imgui.ini
