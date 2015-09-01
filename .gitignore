@@ -1,0 +1,11 @@
+*.bak
+*.orig
+
+bin
+obj
+projects
+*.sln
+*.sdf
+*.opensdf
+*.suo
+imgui.ini
