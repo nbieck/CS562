@@ -22,7 +22,7 @@ namespace CS562
 		//construct an empty image
 		Image();
 		//construct an image with the given pixel data.
-		Image(std::unique_ptr<PixelData> data, unsigned width, unsigned height, unsigned channels);
+		Image(std::unique_ptr<PixelData[]> data, unsigned width, unsigned height, unsigned channels);
 		//construct an empty image with the given dimensions
 		Image(unsigned width, unsigned height, unsigned channels);
 
@@ -44,7 +44,7 @@ namespace CS562
 
 	private:
 
-		std::unique_ptr<PixelData> pixels_;
+		std::unique_ptr<PixelData[]> pixels_;
 		unsigned width_, height_, channels_;
 
 	};
