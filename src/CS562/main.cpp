@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 {
 	try
 	{
-		CS350::Application app;
+		CS562::Application app;
 
 		app.Run();
 
