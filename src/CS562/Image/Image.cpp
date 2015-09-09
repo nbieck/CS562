@@ -24,7 +24,7 @@ namespace CS562
 	}
 
 	Image::Image(const Image & rhs)
-		: width_(rhs.width_), height_(rhs.height_), channels_(rhs.channels_);
+		: width_(rhs.width_), height_(rhs.height_), channels_(rhs.channels_)
 	{
 		pixels_ = std::make_unique<PixelData[]>(width_ * height_ * channels_);
 		std::memcpy(pixels_.get(), rhs.pixels_.get(), width_ * height_ * channels_ * sizeof(PixelData));
