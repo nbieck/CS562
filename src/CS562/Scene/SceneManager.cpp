@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Author: Niklas Bieck
-//  Subject: CS350
+//  Subject: CS562
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@
 
 #include <glm/gtc/constants.hpp>
 
-namespace CS350
+namespace CS562
 {
 	SceneManager::SceneManager(GraphicsManager& gfx, FrameTimer& time)
 		: gfx_(gfx), time_(time), scene_root_(std::make_shared<Object>())

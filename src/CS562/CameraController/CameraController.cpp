@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Author: Niklas Bieck
-//  Subject: CS350
+//  Subject: CS562
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-namespace CS350
+namespace CS562
 {
 	CameraController::CameraController(GraphicsManager& gfx, SceneManager& scene, InputManager& input, FrameTimer& time)
 		: gfx_(gfx), scene_(scene), input_(input), time_(time), rotating_(false)

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Author: Niklas Bieck
-//  Subject: CS350
+//  Subject: CS562
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -14,7 +14,7 @@
 
 #include "../ResourceLoader/ResourceLoader.h"
 
-namespace CS350
+namespace CS562
 {
 	namespace
 	{
@@ -23,7 +23,7 @@ namespace CS350
 	}
 
 	Application::Application()
-		: input(wnd), wnd(WIDTH, HEIGHT, "CS350", *this, input), gfx(WIDTH, HEIGHT, wnd), scene(gfx, time),
+		: input(wnd), wnd(WIDTH, HEIGHT, "CS562", *this, input), gfx(WIDTH, HEIGHT, wnd), scene(gfx, time),
 		cam_control(gfx, scene, input, time), gui(WIDTH, HEIGHT, time, input), running_(true)
 	{}
 

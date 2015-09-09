@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Author: Niklas Bieck
-//  Subject: CS350
+//  Subject: CS562
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -13,7 +13,7 @@
 //forward declare this here, HWND is a pointer to this structure, I don't really want to include Windows.h in here
 struct HWND__;
 
-namespace CS350
+namespace CS562
 {
 	class Application;
 	class InputManager;

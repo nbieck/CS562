@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Author: Niklas Bieck
-//  Subject: CS350
+//  Subject: CS562
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-namespace CS350
+namespace CS562
 {
 	GuiManager* GuiManager::g_gui_ = nullptr;
 
@@ -167,7 +167,7 @@ namespace CS350
 
 	void GuiManager::StartGuiWindow()
 	{
-		ImGui::Begin("CS350 Options");
+		ImGui::Begin("CS562 Options");
 		ImGui::Text("Mouse over for GUI instructions.");
 		if (ImGui::IsItemHovered())
 		{

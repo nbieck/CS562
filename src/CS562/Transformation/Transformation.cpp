@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	Author: Niklas Bieck
-//  Subject: CS350
+//  Subject: CS562
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>	//translate, scale, rotate
 #include <glm/gtx/matrix_interpolation.hpp> //axisAngle
 
-namespace CS350
+namespace CS562
 {
 	Transformation::Transformation()
 		: position(0, 0, 0), scale(1, 1, 1), axis(1, 0, 0), angle(0.f)
