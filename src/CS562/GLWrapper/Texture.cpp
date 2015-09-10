@@ -7,6 +7,7 @@
 
 #include "Texture.h"
 
+#include "ContextState.h"
 #include "../OpenGL/gl_core_4_4.hpp"
 
 namespace CS562
@@ -39,6 +40,9 @@ namespace CS562
 
 	Unbinder<Texture> Texture::Bind(unsigned bind_location)
 	{
+		if (ContextState::GetActiveTextureUnit() != bind_location)
+			ContextState::SetActiveTextureUnit(bind_location);
+
 		gl::BindTexture(gl::TEXTURE_2D, gl_object_);
 
 		return Unbinder<Texture>(*this);
@@ -46,6 +50,9 @@ namespace CS562
 
 	void Texture::Unbind()
 	{
+		if (ContextState::GetActiveTextureUnit() != last_bind_location_)
+			ContextState::SetActiveTextureUnit(last_bind_location_);
+
 		gl::BindTexture(gl::TEXTURE_2D, 0);
 	}
 
