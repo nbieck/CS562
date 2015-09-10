@@ -39,6 +39,9 @@ namespace CS562
 		Texture();
 		~Texture();
 
+		Texture(const Texture& rhs) = delete;
+		Texture& operator=(const Texture& rhs) = delete;
+
 		void AllocateSpace(unsigned width, unsigned height, TextureFormatInternal format, unsigned mip_levels);
 
 		//parameters
@@ -51,13 +54,15 @@ namespace CS562
 
 		//Data transfer
 		void TransferData(int x_offset, int y_offset, unsigned width, unsigned height, 
-			TextureFormat format, TextureDataType type, int mip_level = 0);
+			TextureFormat format, TextureDataType type, void* data, int mip_level = 0);
 
 		void GenerateMipMaps();
 
 	private:
 
 		unsigned gl_object_;
+
+		unsigned last_bind_location_;
 
 	};
 }
