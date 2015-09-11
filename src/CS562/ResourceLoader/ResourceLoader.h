@@ -11,6 +11,7 @@
 #include "../GLWrapper/Shader.h"
 #include "../GLWrapper/ShaderProgram.h"
 #include "../Geometry/Geometry.h"
+#include "../Material/Material.h"
 
 #include <memory>
 #include <map>
@@ -24,6 +25,8 @@ namespace CS562
 		static std::shared_ptr<Shader> LoadShaderFromFile(const char* filename, ShaderType::Type type);
 
 		static std::shared_ptr<ShaderProgram> LoadShaderProgramFromFile(const char* filename);
+
+		static std::string LoadObjFile(std::vector<std::shared_ptr<Geometry>>& geom, std::vector<std::shared_ptr<Material>>& mats, std::string filename);
 
 	private:
 

@@ -26,6 +26,17 @@ namespace CS562
 
 	void SceneManager::InitializeScene()
 	{
+		auto shader = ResourceLoader::LoadShaderProgramFromFile("shaders/light.shader");
+
+		std::vector<std::shared_ptr<Geometry>> geom;
+		std::vector<std::shared_ptr<Material>> mtl;
+
+		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
+
+		for (auto g : geom)
+		{
+			AddObject(glm::vec3(0), shader, g);
+		}
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry)

@@ -7,6 +7,7 @@
 
 #include "ResourceLoader.h"
 
+#include "tiny_obj_loader.h"
 #include <glm/gtc/epsilon.hpp>
 
 #include <string>
@@ -106,5 +107,41 @@ namespace CS562
 		}
 
 		return prog;
+	}
+
+	std::string ResourceLoader::LoadObjFile(std::vector<std::shared_ptr<Geometry>>& geom, 
+		std::vector<std::shared_ptr<Material>>& mats, std::string filename)
+	{
+		using namespace tinyobj;
+
+		std::vector<material_t> tiny_obj_mats;
+		std::vector<shape_t> tiny_obj_shapes;
+
+		std::string load_result = LoadObj(tiny_obj_shapes, tiny_obj_mats, filename.c_str());
+
+		if (load_result.empty())
+		{
+			//extract data from tinyobj format and put it into our geometry
+			for (const auto& shape : tiny_obj_shapes)
+			{
+				//indices can be used directly
+				//vertices need to be translated
+				std::vector<Vertex> vertices;
+				std::size_t num_verts = shape.mesh.positions.size() / 3;
+
+				const std::vector<float>& pos = shape.mesh.positions;
+				const std::vector<float>& normal = shape.mesh.normals;
+
+				for (std::size_t i = 0; i < num_verts; ++i)
+				{
+					vertices.push_back({ glm::vec3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]), 
+						glm::vec3(normal[i * 3], normal[i * 3 + 1], normal[i * 3 + 2]) });
+				}
+
+				geom.push_back(std::make_shared<Geometry>(vertices, shape.mesh.indices, PrimitiveTypes::Triangles));
+			}
+		}
+
+		return load_result;
 	}
 }

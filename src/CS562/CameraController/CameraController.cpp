@@ -29,7 +29,7 @@ namespace CS562
 		cam_obj_ = std::make_shared<Object>(cam_trans);
 		scene_.GetSceneRoot()->AddChild(cam_obj_);
 		
-		camera_ = std::make_shared<Camera>(cam_obj_->GetGlobalTrans(), .1f, 40.f, glm::radians(50.f), (static_cast<float>(width) / static_cast<float>(height)));
+		camera_ = std::make_shared<Camera>(cam_obj_->GetGlobalTrans(), 1.f, 400.f, glm::radians(50.f), (static_cast<float>(width) / static_cast<float>(height)));
 		cam_obj_->cam = camera_;
 		
 		auto light = std::make_shared<Light>(cam_obj_->GetGlobalTrans());
@@ -48,7 +48,7 @@ namespace CS562
 	void CameraController::CardinalMovement()
 	{
 		//magic number, adjust this later to incorporate frame time
-		const float speed = 6.f;
+		const float speed = 60.f;
 
 		Transformation t = cam_obj_->GetLocalTrans();
 

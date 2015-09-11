@@ -80,7 +80,7 @@ void main()
 	vec3 normal = normalize(c_normal);
 	if (!gl_FrontFacing)
 		normal = -normal;
-
+/*
 	vec4 light_col = LightSource.color * max(0, dot(normal, light));
 
 	color = SchlickFresnel(Material.F_0, light, half_vec) * light_col;
@@ -90,4 +90,6 @@ void main()
 	color /= 4 * dot(view, normal) * dot(normal, light);
 
 	color += Diffuse(light, normal);
+*/
+    color = vec4(abs(normal), 1);
 }
