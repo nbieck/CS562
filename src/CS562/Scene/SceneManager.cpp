@@ -31,7 +31,7 @@ namespace CS562
 		std::vector<std::shared_ptr<Geometry>> geom;
 		std::vector<std::shared_ptr<Material>> mtl;
 
-		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
+		ResourceLoader::LoadObjFile(geom, mtl, "rungholt.obj");
 
 		for (auto g : geom)
 		{
@@ -43,7 +43,7 @@ namespace CS562
 	{
 		Transformation t;
 		t.position = position;
-		t.scale = glm::vec3(0.1, 0.1, 0.1);
+		t.scale = glm::vec3(1, 1, 1);
 
 		std::shared_ptr<Object> drawable_obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(drawable_obj);
