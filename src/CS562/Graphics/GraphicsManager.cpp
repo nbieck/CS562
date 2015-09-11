@@ -43,11 +43,6 @@ namespace CS562
 
 		std::list<std::weak_ptr<Drawable>> drawables;
 
-		std::vector<Plane> planes_to_draw;
-		std::shared_ptr<Buffer<Plane>> plane_buff;
-		std::shared_ptr<VertexArray> plane_vao;
-		std::shared_ptr<ShaderProgram> plane_shader;
-
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
 			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid)
 		{
@@ -189,58 +184,6 @@ namespace CS562
 			{
 				wgl::SwapIntervalEXT(0);
 			}
-
-			plane_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/plane.shader");
-			plane_buff = std::make_shared<Buffer<Plane>>();
-			plane_vao = std::make_shared<VertexArray>();
-
-			{
-				auto unbind = plane_buff->Bind(BufferTargets::Vertex);
-
-				plane_buff->ResizeableStorage(1);
-			}
-			{
-				auto unbind = plane_vao->Bind();
-
-				unsigned binding = plane_vao->AddDataBuffer(plane_buff, sizeof(glm::vec3));
-				plane_vao->SetAttributeAssociation(0, binding, 3, DataTypes::Float, 0);
-			}
-		}
-
-		void DrawPlanes(const glm::mat4& view, const glm::mat4& proj)
-		{
-			if (!planes_to_draw.empty())
-			{
-				{
-					auto unbind_buff = plane_buff->Bind(BufferTargets::Vertex);
-
-					if (plane_buff->GetSize() < planes_to_draw.size())
-					{
-						plane_buff->ResizeableStorage(static_cast<unsigned>(planes_to_draw.size()), planes_to_draw.data());
-					}
-					else
-					{
-						plane_buff->SendData(0, static_cast<unsigned>(planes_to_draw.size()), planes_to_draw.data());
-					}
-				}
-
-				gl::DepthMask(gl::FALSE_);
-				gl::Enable(gl::BLEND);
-				gl::Disable(gl::CULL_FACE);
-
-				plane_shader->SetUniform("ViewProj", proj * view);
-
-				auto unbind_shader = plane_shader->Bind();
-				auto unbind_vao = plane_vao->Bind();
-
-				plane_vao->Draw(PrimitiveTypes::Lines, static_cast<unsigned>(planes_to_draw.size() * 2));
-
-				gl::Enable(gl::CULL_FACE);
-				gl::Disable(gl::BLEND);
-				gl::DepthMask(gl::TRUE_);
-
-				planes_to_draw.clear();
-			}
 		}
 	};
 
@@ -291,8 +234,6 @@ namespace CS562
 				gl::Enable(gl::CULL_FACE);
 				gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
 			}
-
-			impl->DrawPlanes(view, proj);
 		}
 
 		ImGui::Render();
@@ -308,10 +249,5 @@ namespace CS562
 	void GraphicsManager::SetDrawmode(Drawmode mode)
 	{
 		impl->mode = mode;
-	}
-
-	void GraphicsManager::DrawPlane(glm::vec3 position, glm::vec3 normal)
-	{
-		impl->planes_to_draw.push_back({ position, normal });
 	}
 }

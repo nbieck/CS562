@@ -37,8 +37,6 @@ namespace CS562
 
 		void SetDrawmode(Drawmode mode);
 
-		void DrawPlane(glm::vec3 position, glm::vec3 normal);
-
 		std::shared_ptr<Camera> current_cam;
 		std::shared_ptr<Light> curr_light;
 
