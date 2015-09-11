@@ -26,29 +26,6 @@ namespace CS562
 
 	void SceneManager::InitializeScene()
 	{
-		auto sphere = ResourceLoader::LoadGeometryFromFile("meshes/sphere.obj");
-		auto box = ResourceLoader::LoadGeometryFromFile("meshes/box.obj");
-		auto cone = ResourceLoader::LoadGeometryFromFile("meshes/cone.obj");
-		auto cylinder = ResourceLoader::LoadGeometryFromFile("meshes/cylinder.obj");
-		auto pyramid = ResourceLoader::LoadGeometryFromFile("meshes/pyramid.obj");
-
-		auto shader = ResourceLoader::LoadShaderProgramFromFile("shaders/light.shader");
-
-		shader->SetUniform("Material.roughness", 0.1f);
-		shader->SetUniform("Material.F_0", glm::vec4(1, 1, 1, 1));
-
-		AddObject(glm::vec3(4, 1, -1), shader, box);
-		AddObject(glm::vec3(-2, 0, 4), shader, cone);
-		AddObject(glm::vec3(2, 5, 0), shader, cone);
-		AddObject(glm::vec3(7, -2.5, 3), shader, pyramid);
-		AddObject(glm::vec3(8, 1.3, -6), shader, box);
-		AddObject(glm::vec3(-3, 1, -3), shader, cylinder);
-		AddObject(glm::vec3(9, 0, 6), shader, cone);
-		AddObject(glm::vec3(-1, 3, -5), shader, box);
-		AddObject(glm::vec3(5, 5, 5), shader, pyramid);
-		AddObject(glm::vec3(-6, 1, 4), shader, cylinder);
-		AddObject(glm::vec3(0, 4.5, 1), shader, pyramid);
-		AddObject(glm::vec3(-1.5, 2.4, 6), shader, box);
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry)
