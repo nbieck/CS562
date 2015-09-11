@@ -35,7 +35,7 @@ namespace CS562
 
 	void Texture::SetParameter(TextureParameter param, int value)
 	{
-		gl::TexParameterf(gl::TEXTURE_2D, static_cast<GLenum>(param), value);
+		gl::TexParameteri(gl::TEXTURE_2D, static_cast<GLenum>(param), value);
 	}
 
 	Unbinder<Texture> Texture::Bind(unsigned bind_location)
