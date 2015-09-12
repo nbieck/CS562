@@ -8,6 +8,7 @@
 #include "ResourceLoader.h"
 
 #include "tiny_obj_loader.h"
+#include "stb_image.h"
 #include <glm/gtc/epsilon.hpp>
 
 #include <string>
@@ -143,5 +144,53 @@ namespace CS562
 		}
 
 		return load_result;
+	}
+
+	std::shared_ptr<Texture> ResourceLoader::LoadTextureFromFile(const std::string & filename)
+	{
+		int x, y, components;
+		unsigned char* img_data = stbi_load(filename.c_str(), &x, &y, &components, STBI_default);
+
+		if (img_data == nullptr)
+			return nullptr;
+
+		std::shared_ptr<Texture> tex = std::make_shared<Texture>();
+
+		TextureFormatInternal format_internal;
+		TextureFormat format;
+		switch (components)
+		{
+		case 1:
+			format_internal = TextureFormatInternal::R8;
+			format = TextureFormat::R;
+			break;
+		case 2:
+			format_internal = TextureFormatInternal::RG8;
+			format = TextureFormat::RG;
+			break;
+		case 3:
+			format_internal = TextureFormatInternal::RGB8;
+			format = TextureFormat::RGB;
+			break;
+		case 4:
+		default:
+			format_internal = TextureFormatInternal::RGBA8;
+			format = TextureFormat::RGBA;
+		}
+
+		auto unbind = tex->Bind(0);
+
+		tex->AllocateSpace(x, y, format_internal, ComputeMipLevels(x, y));
+
+		tex->TransferData(0, 0, x, y, format, TextureDataType::UnsignedByte, img_data);
+
+		stbi_image_free(img_data);
+
+		return tex;
+	}
+
+	int ResourceLoader::ComputeMipLevels(int width, int height)
+	{
+		return 0;
 	}
 }

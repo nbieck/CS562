@@ -12,6 +12,7 @@
 #include "../GLWrapper/ShaderProgram.h"
 #include "../Geometry/Geometry.h"
 #include "../Material/Material.h"
+#include "../GLWrapper/Texture.h"
 
 #include <memory>
 #include <map>
@@ -28,7 +29,11 @@ namespace CS562
 
 		static std::string LoadObjFile(std::vector<std::shared_ptr<Geometry>>& geom, std::vector<std::shared_ptr<Material>>& mats, std::string filename);
 
+		static std::shared_ptr<Texture> LoadTextureFromFile(const std::string& filename);
+
 	private:
+
+		static int ComputeMipLevels(int width, int height);
 
 	};
 }
