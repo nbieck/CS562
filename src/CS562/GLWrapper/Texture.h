@@ -13,17 +13,24 @@ namespace CS562
 {
 	enum class TextureFormatInternal
 	{
-		//add formats relevant to us here
+		R8 = 0x8229,
+		RG8 = 0x822B,
+		RGB8 = 0x8051,
+		RGBA8 = 0x8058,
 	};
 
 	enum class TextureFormat
 	{
-
+		R = 0x1903,
+		RG = 0x8227,
+		RGB = 0x1907,
+		RGBA = 0x1908,
+		Depth = 0x1902,
 	};
 
 	enum class TextureDataType
 	{
-
+		UnsignedByte = 0x1401,
 	};
 
 	enum class TextureParameter
