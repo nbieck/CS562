@@ -57,6 +57,7 @@ namespace CS562
 
 		//Binding - Unbinding
 		Unbinder<Texture> Bind(unsigned bind_location);
+		void Bind_NoUnbind(unsigned bind_location);
 		void Unbind();
 
 		//Data transfer

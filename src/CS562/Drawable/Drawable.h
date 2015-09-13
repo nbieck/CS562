@@ -11,6 +11,7 @@
 #include "../Transformation/Transformation.h"
 #include "../GLWrapper/ShaderProgram.h"
 #include "../Geometry/Geometry.h"
+#include "../Material/Material.h"
 
 #include <glm/glm.hpp>
 
@@ -28,8 +29,7 @@ namespace CS562
 
 		std::shared_ptr<ShaderProgram> shader;
 		std::shared_ptr<Geometry> geometry;
-
-		glm::vec4 color;
+		std::shared_ptr<Material> material;
 
 		//set any additional uniforms besides transformation before calling this
 		void Draw(const glm::mat4& view, const glm::mat4& projection);

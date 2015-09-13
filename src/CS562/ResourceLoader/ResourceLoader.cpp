@@ -8,7 +8,12 @@
 #include "ResourceLoader.h"
 
 #include "tiny_obj_loader.h"
+
+#pragma warning(disable: 4312)
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#pragma warning(default: 4312)
+
 #include <glm/gtc/epsilon.hpp>
 
 #include <string>
@@ -17,8 +22,12 @@
 #include <iostream>
 #include <sstream>
 
+#define MAX(a,b) ((a > b)?a:b)
+
 namespace CS562
 {
+	std::map<std::string, std::weak_ptr<Texture>> ResourceLoader::loaded_textures_;
+
 	std::shared_ptr<Shader> ResourceLoader::LoadShaderFromFile(const char* filename, ShaderType::Type type)
 	{
 		//method of reading entire file into a string taken from here:
@@ -110,7 +119,7 @@ namespace CS562
 		return prog;
 	}
 
-	std::string ResourceLoader::LoadObjFile(std::vector<std::shared_ptr<Geometry>>& geom, 
+	std::string ResourceLoader::LoadObjFile(std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>>& geom,
 		std::vector<std::shared_ptr<Material>>& mats, std::string filename)
 	{
 		using namespace tinyobj;
@@ -132,14 +141,24 @@ namespace CS562
 
 				const std::vector<float>& pos = shape.mesh.positions;
 				const std::vector<float>& normal = shape.mesh.normals;
+				const std::vector<float>& uv = shape.mesh.texcoords;
 
 				for (std::size_t i = 0; i < num_verts; ++i)
 				{
 					vertices.push_back({ glm::vec3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]), 
-						glm::vec3(normal[i * 3], normal[i * 3 + 1], normal[i * 3 + 2]) });
+						glm::vec3(normal[i * 3], normal[i * 3 + 1], normal[i * 3 + 2]),
+						glm::vec2(uv[i * 2], uv[i * 2 + 1]) });
 				}
 
-				geom.push_back(std::make_shared<Geometry>(vertices, shape.mesh.indices, PrimitiveTypes::Triangles));
+				geom.push_back(std::make_pair(std::make_shared<Geometry>(vertices, shape.mesh.indices, PrimitiveTypes::Triangles), shape.mesh.material_ids[0]));
+			}
+
+			for (const auto& material : tiny_obj_mats)
+			{
+				auto mat = std::make_shared<Material>();
+				mat->diffuse_tex = LoadTextureFromFile(material.diffuse_texname);
+
+				mats.push_back(mat);
 			}
 		}
 
@@ -148,6 +167,10 @@ namespace CS562
 
 	std::shared_ptr<Texture> ResourceLoader::LoadTextureFromFile(const std::string & filename)
 	{
+		auto pre_loaded = loaded_textures_.find(filename);
+		if (pre_loaded != loaded_textures_.end() && !pre_loaded->second.expired())
+			return pre_loaded->second.lock();
+
 		int x, y, components;
 		unsigned char* img_data = stbi_load(filename.c_str(), &x, &y, &components, STBI_default);
 
@@ -178,19 +201,41 @@ namespace CS562
 			format = TextureFormat::RGBA;
 		}
 
-		auto unbind = tex->Bind(0);
+		auto unbind = tex->Bind(1);
 
 		tex->AllocateSpace(x, y, format_internal, ComputeMipLevels(x, y));
 
+		InvertImageVertically(x, y, components, img_data);
+
 		tex->TransferData(0, 0, x, y, format, TextureDataType::UnsignedByte, img_data);
 
+		tex->GenerateMipMaps();
+
 		stbi_image_free(img_data);
+
+		loaded_textures_[filename] = tex;
 
 		return tex;
 	}
 
 	int ResourceLoader::ComputeMipLevels(int width, int height)
 	{
-		return 0;
+		return static_cast<int>(std::floor(std::log2(MAX(width, height))) + 1);
+	}
+	void ResourceLoader::InvertImageVertically(int width, int height, int channels, unsigned char * const image)
+	{
+		for (int j = 0; j * 2 < height; ++j)
+		{
+			int index1 = j * width * channels;
+			int index2 = (height - 1 - j) * width * channels;
+			for (int i = width * channels; i > 0; --i)
+			{
+				unsigned char temp = image[index1];
+				image[index1] = image[index2];
+				image[index2] = temp;
+				++index1;
+				++index2;
+			}
+		}
 	}
 }

@@ -45,7 +45,19 @@ namespace CS562
 
 		gl::BindTexture(gl::TEXTURE_2D, gl_object_);
 
+		last_bind_location_ = bind_location;
+
 		return Unbinder<Texture>(*this);
+	}
+
+	void Texture::Bind_NoUnbind(unsigned bind_location)
+	{
+		if (ContextState::GetActiveTextureUnit() != bind_location)
+			ContextState::SetActiveTextureUnit(bind_location);
+
+		gl::BindTexture(gl::TEXTURE_2D, gl_object_);
+
+		last_bind_location_ = bind_location;
 	}
 
 	void Texture::Unbind()

@@ -27,13 +27,17 @@ namespace CS562
 
 		static std::shared_ptr<ShaderProgram> LoadShaderProgramFromFile(const char* filename);
 
-		static std::string LoadObjFile(std::vector<std::shared_ptr<Geometry>>& geom, std::vector<std::shared_ptr<Material>>& mats, std::string filename);
+		static std::string LoadObjFile(std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>>& geom, std::vector<std::shared_ptr<Material>>& mats, std::string filename);
 
 		static std::shared_ptr<Texture> LoadTextureFromFile(const std::string& filename);
 
 	private:
 
+		static std::map<std::string, std::weak_ptr<Texture>> loaded_textures_;
+
 		static int ComputeMipLevels(int width, int height);
+
+		static void InvertImageVertically(int width, int height, int channels, unsigned char *const image);
 
 	};
 }

@@ -26,28 +26,29 @@ namespace CS562
 
 	void SceneManager::InitializeScene()
 	{
-		auto shader = ResourceLoader::LoadShaderProgramFromFile("shaders/light.shader");
+		auto shader = ResourceLoader::LoadShaderProgramFromFile("shaders/deferred_geometry.shader");
 
-		std::vector<std::shared_ptr<Geometry>> geom;
+		std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 		std::vector<std::shared_ptr<Material>> mtl;
 
-		ResourceLoader::LoadObjFile(geom, mtl, "rungholt.obj");
+		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
 
 		for (auto g : geom)
 		{
-			AddObject(glm::vec3(0), shader, g);
+			AddObject(glm::vec3(0), shader, g.first, mtl[g.second]);
 		}
 	}
 
-	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry)
+	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
 	{
 		Transformation t;
 		t.position = position;
-		t.scale = glm::vec3(1, 1, 1);
+		t.scale = glm::vec3(.1f, .1f, .1f);
 
 		std::shared_ptr<Object> drawable_obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(drawable_obj);
 		std::shared_ptr<Drawable> draw = std::make_shared<Drawable>(drawable_obj->GetGlobalTrans(), shader, geometry);
+		draw->material = material;
 		drawable_obj->drawable = draw;
 
 		gfx_.RegisterDrawable(draw);

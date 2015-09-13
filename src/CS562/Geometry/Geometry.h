@@ -22,9 +22,11 @@ namespace CS562
 	{
 		using Position = glm::vec3;
 		using Normal = glm::vec3;
+		using TexCoord = glm::vec2;
 
 		Position pos;
 		Normal normal;
+		TexCoord uv;
 	};
 
 	class Geometry

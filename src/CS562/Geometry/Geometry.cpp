@@ -31,6 +31,7 @@ namespace CS562
 			unsigned buffer_idx = vao_->AddDataBuffer(vtx_buffer_, sizeof(Vertex));
 			vao_->SetAttributeAssociation(0, buffer_idx, 3, DataTypes::Float, 0);
 			vao_->SetAttributeAssociation(1, buffer_idx, 3, DataTypes::Float, sizeof(Vertex::Position));
+			vao_->SetAttributeAssociation(2, buffer_idx, 2, DataTypes::Float, sizeof(Vertex::Position) + sizeof(Vertex::Normal));
 		}
 	}
 
