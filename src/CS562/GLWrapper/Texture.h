@@ -35,8 +35,25 @@ namespace CS562
 
 	enum class TextureParameter
 	{
-
+		WrapS = 0x2802,
+		WrapT = 0x2803,
+		MagFilter = 0x2800,
+		MinFilter = 0x2801
 	};
+
+	namespace TextureParamValue
+	{
+		const int FilterNearest = 0x2600;
+		const int FilterLinear = 0x2601;
+		const int FilterNearestMipmapNearest = 0x2700;
+		const int FilterNearestMipmapLinear = 0x2702;
+		const int FilterLinearMipmapNearest = 0x2701;
+		const int FilterLinearMipmapLinear = 0x2703;
+		const int ClampToEdge = 0x812F;
+		const int ClampToBorder = 0x812D;
+		const int MirroredRepeat = 0x8370;
+		const int Repeat = 0x2901;
+	}
 
 	// This manages the GPU-side texture resource.
 	class Texture
