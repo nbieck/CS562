@@ -17,6 +17,15 @@ namespace CS562
 		RG8 = 0x822B,
 		RGB8 = 0x8051,
 		RGBA8 = 0x8058,
+
+		R32F = 0x822E,
+		RG32F = 0x8230,
+		RGB32F = 0x8815,
+		RGBA32F = 0x8814,
+
+		DEPTH16 = 0x81A5,
+		DEPTH24 = 0x81A6,
+		DEPTH32 = 0x81A7,
 	};
 
 	enum class TextureFormat

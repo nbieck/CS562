@@ -8,6 +8,7 @@
 #include "GuiManager.h"
 
 #include "../ResourceLoader/ResourceLoader.h"
+#include "../GLWrapper/ContextState.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -111,7 +112,7 @@ namespace CS562
 		io.Fonts->GetTexDataAsRGBA32(&pixels, &tex_width, &tex_height);
 
 		gl::GenTextures(1, &gui_tex_);
-		gl::ActiveTexture(gl::TEXTURE0);
+		ContextState::SetActiveTextureUnit(0);
 		gl::BindTexture(gl::TEXTURE_2D, gui_tex_);
 		gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR);
 		gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR);

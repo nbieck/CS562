@@ -13,6 +13,7 @@
 #include "../GLWrapper/VertexArray.h"
 #include "../GLWrapper/ShaderProgram.h"
 #include "../ResourceLoader/ResourceLoader.h"
+#include "../CompoundObjects/GBuffer.h"
 
 #include "../ImGui/imgui.h"
 
@@ -40,6 +41,8 @@ namespace CS562
 
 		HDC device_context;
 		HGLRC ogl_context;
+
+		std::unique_ptr<GBuffer> g_buffer;
 
 		std::list<std::weak_ptr<Drawable>> drawables;
 
@@ -173,7 +176,7 @@ namespace CS562
 		void InitGL()
 		{
 			gl::Viewport(0, 0, width, height);
-			gl::ClearColor(0.2f, 0.2f, 0.2f, 1.f);
+			gl::ClearColor(0.0f, 0.0f, 0.0f, 1.f);
 			gl::Enable(gl::DEPTH_TEST);
 			gl::DepthFunc(gl::LESS);
 			gl::Enable(gl::CULL_FACE);
@@ -185,6 +188,45 @@ namespace CS562
 				wgl::SwapIntervalEXT(0);
 			}
 		}
+
+		void GeometryPass()
+		{
+			auto unbind = g_buffer->g_buff->Bind();
+			gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+
+			if (owner.current_cam)
+			{
+				glm::mat4 view, proj;
+				view = owner.current_cam->GetViewMatrix();
+				proj = owner.current_cam->GetProjectionMatrix();
+
+				if (mode == Drawmode::Wireframe)
+				{
+					gl::Disable(gl::CULL_FACE);
+					gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
+				}
+
+				for (auto it = drawables.begin(); it != drawables.end();)
+				{
+					if (it->expired())
+					{
+						it = drawables.erase(it);
+					}
+					else
+					{
+						auto drawable = it->lock();
+						drawable->Draw(view, proj);
+						++it;
+					}
+				}
+
+				if (mode == Drawmode::Wireframe)
+				{
+					gl::Enable(gl::CULL_FACE);
+					gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
+				}
+			}
+		}
 	};
 
 	GraphicsManager::~GraphicsManager() = default;
@@ -194,47 +236,14 @@ namespace CS562
 	{
 		impl->CreateContext();
 		impl->InitGL();
+		impl->g_buffer = std::make_unique<GBuffer>(width, height);
 	}
 
 	void GraphicsManager::Update()
 	{
+		//clear the default frame buffer
 		gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-
-		if (current_cam)
-		{
-			glm::mat4 view, proj;
-			view = current_cam->GetViewMatrix();
-			proj = current_cam->GetProjectionMatrix();
-
-			if (impl->mode == Drawmode::Wireframe)
-			{
-				gl::Disable(gl::CULL_FACE);
-				gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
-			}
-
-			for (auto it = impl->drawables.begin(); it != impl->drawables.end();)
-			{
-				if (it->expired())
-				{
-					it = impl->drawables.erase(it);
-				}
-				else
-				{
-					auto drawable = it->lock();
-
-					if (curr_light)
-						curr_light->SetUniforms(drawable->shader, view);
-					drawable->Draw(view, proj);
-					++it;
-				}
-			}
-
-			if (impl->mode == Drawmode::Wireframe)
-			{
-				gl::Enable(gl::CULL_FACE);
-				gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
-			}
-		}
+		impl->GeometryPass();
 
 		ImGui::Render();
 
