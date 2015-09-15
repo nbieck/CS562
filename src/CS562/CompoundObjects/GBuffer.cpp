@@ -19,6 +19,10 @@ namespace CS562
 		}
 
 		{
+			auto unbind = attachments[Buffers::LightAccumulation]->Bind(1);
+			attachments[Buffers::LightAccumulation]->AllocateSpace(width, height, TextureFormatInternal::RGB8, 1);
+		}
+		{
 			auto unbind = attachments[Buffers::Position]->Bind(1);
 			attachments[Buffers::Position]->AllocateSpace(width, height, TextureFormatInternal::RGB32F, 1);
 		}
@@ -44,11 +48,12 @@ namespace CS562
 		}
 
 		auto unbind = g_buff->Bind();
-		g_buff->AttachTexture(Attachments::Color0, attachments[Buffers::Position]);
-		g_buff->AttachTexture(Attachments::Color1, attachments[Buffers::Normal]);
-		g_buff->AttachTexture(Attachments::Color2, attachments[Buffers::Diffuse]);
-		g_buff->AttachTexture(Attachments::Color3, attachments[Buffers::Specular]);
-		g_buff->AttachTexture(Attachments::Color4, attachments[Buffers::Alpha]);
+		g_buff->AttachTexture(Attachments::Color0, attachments[Buffers::LightAccumulation]);
+		g_buff->AttachTexture(Attachments::Color1, attachments[Buffers::Position]);
+		g_buff->AttachTexture(Attachments::Color2, attachments[Buffers::Normal]);
+		g_buff->AttachTexture(Attachments::Color3, attachments[Buffers::Diffuse]);
+		g_buff->AttachTexture(Attachments::Color4, attachments[Buffers::Specular]);
+		g_buff->AttachTexture(Attachments::Color5, attachments[Buffers::Alpha]);
 		g_buff->AttachTexture(Attachments::Depth, attachments[Buffers::Depth]);
 	}
 

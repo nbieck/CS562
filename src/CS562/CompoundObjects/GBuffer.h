@@ -19,7 +19,8 @@ namespace CS562
 	{
 		enum Buffers
 		{
-			Position = 0,
+			LightAccumulation = 0,
+			Position,
 			Normal,
 			Diffuse,
 			Specular,
