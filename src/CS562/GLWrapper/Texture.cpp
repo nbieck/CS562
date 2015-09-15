@@ -79,4 +79,9 @@ namespace CS562
 	{
 		gl::GenerateMipmap(gl::TEXTURE_2D);
 	}
+
+	unsigned Texture::GetGLObject()
+	{
+		return gl_object_;
+	}
 }

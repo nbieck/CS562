@@ -83,6 +83,9 @@ namespace CS562
 
 		void GenerateMipMaps();
 
+		//for internal use only
+		unsigned GetGLObject();
+
 	private:
 
 		unsigned gl_object_;
