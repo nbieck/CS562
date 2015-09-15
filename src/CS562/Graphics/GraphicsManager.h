@@ -10,9 +10,9 @@
 
 #include "../Window/WindowManager.h"
 
-#include "../Drawable/Drawable.h"
+#include "../CompoundObjects/Drawable.h"
 #include "../Camera/Camera.h"
-#include "../Light/Light.h"
+#include "../CompoundObjects/Light.h"
 
 #include <memory>
 

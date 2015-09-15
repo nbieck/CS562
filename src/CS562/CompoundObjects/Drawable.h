@@ -10,8 +10,8 @@
 
 #include "../Transformation/Transformation.h"
 #include "../GLWrapper/ShaderProgram.h"
-#include "../Geometry/Geometry.h"
-#include "../Material/Material.h"
+#include "Geometry.h"
+#include "Material.h"
 
 #include <glm/glm.hpp>
 

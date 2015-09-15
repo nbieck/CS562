@@ -7,7 +7,7 @@
 
 #include "CameraController.h"
 
-#include "../Light/Light.h"
+#include "../CompoundObjects/Light.h"
 
 #include <glm/gtc/epsilon.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -10,8 +10,8 @@
 
 #include "../GLWrapper/Shader.h"
 #include "../GLWrapper/ShaderProgram.h"
-#include "../Geometry/Geometry.h"
-#include "../Material/Material.h"
+#include "../CompoundObjects/Geometry.h"
+#include "../CompoundObjects/Material.h"
 #include "../GLWrapper/Texture.h"
 
 #include <memory>

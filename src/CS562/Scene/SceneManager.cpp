@@ -7,8 +7,8 @@
 
 #include "SceneManager.h"
 
-#include "../Geometry/Geometry.h"
-#include "../Drawable/Drawable.h"
+#include "../CompoundObjects/Geometry.h"
+#include "../CompoundObjects/Drawable.h"
 #include "../Camera/Camera.h"
 #include "../GLWrapper/Shader.h"
 #include "../GLWrapper/ShaderProgram.h"
@@ -17,6 +17,8 @@
 #include <vector>
 
 #include <glm/gtc/constants.hpp>
+
+#include <iostream>
 
 namespace CS562
 {

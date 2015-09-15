@@ -10,8 +10,8 @@
 
 #include "../Transformation/Transformation.h"
 #include "../Camera/Camera.h"
-#include "../Drawable/Drawable.h"
-#include "../Light/Light.h"
+#include "../CompoundObjects/Drawable.h"
+#include "../CompoundObjects/Light.h"
 
 #include <memory>
 #include <list>

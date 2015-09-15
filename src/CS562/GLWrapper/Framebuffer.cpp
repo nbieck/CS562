@@ -47,14 +47,14 @@ namespace CS562
 	{
 		gl_attachment_buff_[attachment_number] = static_cast<unsigned>(attachments_[attachment_number]);
 
-		gl::DrawBuffers(gl_attachment_buff_.size(), gl_attachment_buff_.data());
+		gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
 	}
 
 	void Framebuffer::DisableAttachment(std::size_t attachment_number)
 	{
 		gl_attachment_buff_[attachment_number] = gl::NONE;
 
-		gl::DrawBuffers(gl_attachment_buff_.size(), gl_attachment_buff_.data());
+		gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
 	}
 
 	void Framebuffer::EnableAttachments(std::vector<std::size_t> attachments)
@@ -66,6 +66,6 @@ namespace CS562
 			gl_attachment_buff_[att] = static_cast<unsigned>(attachments_[att]);
 		}
 
-		gl::DrawBuffers(gl_attachment_buff_.size(), gl_attachment_buff_.data());
+		gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
 	}
 }
