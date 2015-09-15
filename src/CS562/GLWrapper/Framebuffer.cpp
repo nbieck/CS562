@@ -39,6 +39,7 @@ namespace CS562
 		gl_attachment_buff_.push_back(static_cast<unsigned>(location));
 
 		gl::FramebufferTexture(gl::FRAMEBUFFER, static_cast<unsigned>(location), tex->GetGLObject(), 0);
+		gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
 
 		return attachments_.size() - 1;
 	}

@@ -17,17 +17,18 @@
 
 #include "../ImGui/imgui.h"
 
+#include <glm/glm.hpp>
+
 #include <list>
+#include <memory>
 
 namespace CS562
 {
 	namespace
 	{
-		struct Plane
-		{
-			glm::vec3 position;
-			glm::vec3 normal;
-		};
+		const glm::vec3 quad_verts[] =
+		{ {1, 1, 0}, {-1, 1, 0}, {-1, -1, 0}, 
+		  {1, 1, 0}, {-1, -1, 0}, {1, -1, 0} };
 	}
 
 	struct GraphicsManager::PImpl
@@ -43,6 +44,10 @@ namespace CS562
 		HGLRC ogl_context;
 
 		std::unique_ptr<GBuffer> g_buffer;
+
+		std::unique_ptr<VertexArray> FSQ;
+		std::shared_ptr<ShaderProgram> buffer_copy;
+		std::shared_ptr<Buffer<glm::vec3>> quad_buffer;
 
 		std::list<std::weak_ptr<Drawable>> drawables;
 
@@ -189,6 +194,33 @@ namespace CS562
 			}
 		}
 
+		void SetupFSQ()
+		{
+			quad_buffer = std::make_shared<Buffer<glm::vec3>>();
+			{
+				auto unbind = quad_buffer->Bind(BufferTargets::Vertex);
+				quad_buffer->SetUpStorage(sizeof(quad_verts) / sizeof(glm::vec3), BufferCreateFlags::None, quad_verts);
+			}
+
+			FSQ = std::make_unique<VertexArray>();
+			auto unbind = FSQ->Bind();
+			unsigned buffer_idx = FSQ->AddDataBuffer(quad_buffer, sizeof(glm::vec3));
+			FSQ->SetAttributeAssociation(0, buffer_idx, 3, DataTypes::Float, 0);
+		}
+		
+		void SetupShaders()
+		{
+			buffer_copy = ResourceLoader::LoadShaderProgramFromFile("shaders/copy_buffer.shader");
+
+			buffer_copy->SetUniform("LightAccumulation", 1);
+			buffer_copy->SetUniform("Position", 2);
+			buffer_copy->SetUniform("Normal", 3);
+			buffer_copy->SetUniform("Diffuse", 4);
+			buffer_copy->SetUniform("Specular", 5);
+			buffer_copy->SetUniform("Shininess", 6);
+			buffer_copy->SetUniform("BufferToShow", 0);
+		}
+
 		void GeometryPass()
 		{
 			auto unbind = g_buffer->g_buff->Bind();
@@ -227,6 +259,17 @@ namespace CS562
 				}
 			}
 		}
+
+		void CopyBufferPass()
+		{
+			g_buffer->BindTextures(1);
+
+			auto unbind_shader = buffer_copy->Bind();
+			auto unbind_vao = FSQ->Bind();
+			FSQ->Draw(PrimitiveTypes::Triangles, 6);
+
+			g_buffer->UnbindTextures();
+		}
 	};
 
 	GraphicsManager::~GraphicsManager() = default;
@@ -237,6 +280,8 @@ namespace CS562
 		impl->CreateContext();
 		impl->InitGL();
 		impl->g_buffer = std::make_unique<GBuffer>(width, height);
+		impl->SetupFSQ();
+		impl->SetupShaders();
 	}
 
 	void GraphicsManager::Update()
@@ -244,6 +289,8 @@ namespace CS562
 		//clear the default frame buffer
 		gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 		impl->GeometryPass();
+
+		impl->CopyBufferPass();
 
 		ImGui::Render();
 
@@ -258,5 +305,10 @@ namespace CS562
 	void GraphicsManager::SetDrawmode(Drawmode mode)
 	{
 		impl->mode = mode;
+	}
+
+	void GraphicsManager::SetShownBuffer(int buffer)
+	{
+		impl->buffer_copy->SetUniform("BufferToShow", buffer);
 	}
 }

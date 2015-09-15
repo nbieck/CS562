@@ -24,6 +24,19 @@ namespace CS562
 		Wireframe
 	};
 
+	namespace DrawBuffers
+	{
+		enum DrawBuffers
+		{
+			LightAccum = 0,
+			Position,
+			Normal,
+			Diffuse,
+			Specular,
+			Shininess
+		};
+	}
+
 	class GraphicsManager
 	{
 	public:
@@ -36,6 +49,8 @@ namespace CS562
 		void RegisterDrawable(const std::weak_ptr<Drawable>& drawable);
 
 		void SetDrawmode(Drawmode mode);
+
+		void SetShownBuffer(int buffer);
 
 		std::shared_ptr<Camera> current_cam;
 		std::shared_ptr<Light> curr_light;

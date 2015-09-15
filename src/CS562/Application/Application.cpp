@@ -32,6 +32,9 @@ namespace CS562
 		scene.InitializeScene();
 		cam_control.Init(WIDTH, HEIGHT);
 
+		int show_buffer = DrawBuffers::LightAccum;
+		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
+
 		while (running_)
 		{
 			time.Update();
@@ -44,6 +47,9 @@ namespace CS562
 			if (gui.GuiVisible())
 			{
 				gui.StartGuiWindow();		
+
+				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 6))
+					gfx.SetShownBuffer(show_buffer);
 
 				gui.EndGuiWindow();
 			}
