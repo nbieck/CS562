@@ -269,9 +269,9 @@ namespace CS562
 
 		void LightingPass()
 		{
-			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Depth });
+			auto unbind_buffer = g_buffer->g_buff->Bind();
+			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});
 			{
-				auto unbind_buffer = g_buffer->g_buff->Bind();
 				g_buffer->BindTextures(1, false);
 				auto unbind_vao = FSQ->Bind();
 
@@ -281,7 +281,7 @@ namespace CS562
 				}
 			}
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
-				Buffers::Specular, Buffers::Alpha, Buffers::Depth });
+				Buffers::Specular, Buffers::Alpha});
 		}
 
 		void CopyBufferPass()

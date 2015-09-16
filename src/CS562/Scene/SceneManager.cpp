@@ -33,7 +33,7 @@ namespace CS562
 		std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 		std::vector<std::shared_ptr<Material>> mtl;
 
-		ResourceLoader::LoadObjFile(geom, mtl, "rungholt.obj");
+		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
 
 		for (auto g : geom)
 		{

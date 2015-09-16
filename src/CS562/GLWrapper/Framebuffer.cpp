@@ -35,13 +35,21 @@ namespace CS562
 
 	std::size_t Framebuffer::AttachTexture(Attachments location, std::shared_ptr<Texture> tex)
 	{
-		attachments_.push_back(location);
-		gl_attachment_buff_.push_back(static_cast<unsigned>(location));
+		if (location != Attachments::Depth && location != Attachments::Stencil && location != Attachments::DepthStencil)
+		{
+			attachments_.push_back(location);
+			gl_attachment_buff_.push_back(static_cast<unsigned>(location));
 
-		gl::FramebufferTexture(gl::FRAMEBUFFER, static_cast<unsigned>(location), tex->GetGLObject(), 0);
-		gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
+			gl::FramebufferTexture(gl::FRAMEBUFFER, static_cast<unsigned>(location), tex->GetGLObject(), 0);
+			gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
 
-		return attachments_.size() - 1;
+			return attachments_.size() - 1;
+		}
+		else
+		{
+			gl::FramebufferTexture(gl::FRAMEBUFFER, static_cast<unsigned>(location), tex->GetGLObject(), 0);
+			return static_cast<size_t>(-1);
+		}
 	}
 
 	void Framebuffer::EnableAttachment(std::size_t attachment_number)
@@ -68,5 +76,6 @@ namespace CS562
 		}
 
 		gl::DrawBuffers(static_cast<unsigned>(gl_attachment_buff_.size()), gl_attachment_buff_.data());
+		gl::GetError();
 	}
 }
