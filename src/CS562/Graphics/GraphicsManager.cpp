@@ -49,6 +49,8 @@ namespace CS562
 		std::shared_ptr<ShaderProgram> buffer_copy;
 		std::shared_ptr<Buffer<glm::vec3>> quad_buffer;
 
+		std::shared_ptr<ShaderProgram> ambient_shader;
+
 		std::list<std::weak_ptr<Drawable>> drawables;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
@@ -219,6 +221,11 @@ namespace CS562
 			buffer_copy->SetUniform("Specular", 5);
 			buffer_copy->SetUniform("Shininess", 6);
 			buffer_copy->SetUniform("BufferToShow", 0);
+
+			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
+
+			ambient_shader->SetUniform("Diffuse", 3);
+			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.1f));
 		}
 
 		void GeometryPass()
@@ -260,6 +267,23 @@ namespace CS562
 			}
 		}
 
+		void LightingPass()
+		{
+			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Depth });
+			{
+				auto unbind_buffer = g_buffer->g_buff->Bind();
+				g_buffer->BindTextures(1, false);
+				auto unbind_vao = FSQ->Bind();
+
+				{
+					auto unbind_shader = ambient_shader->Bind();
+					FSQ->Draw(PrimitiveTypes::Triangles, 6);
+				}
+			}
+			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
+				Buffers::Specular, Buffers::Alpha, Buffers::Depth });
+		}
+
 		void CopyBufferPass()
 		{
 			g_buffer->BindTextures(1);
@@ -289,6 +313,8 @@ namespace CS562
 		//clear the default frame buffer
 		gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 		impl->GeometryPass();
+
+		impl->LightingPass();
 
 		impl->CopyBufferPass();
 

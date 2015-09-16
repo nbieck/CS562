@@ -37,7 +37,7 @@ namespace CS562
 
 		GBuffer(unsigned width, unsigned height);
 
-		void BindTextures(unsigned starting_idx);
+		void BindTextures(unsigned starting_idx, bool include_light = true);
 		void UnbindTextures();
 
 		std::shared_ptr<Framebuffer> g_buff;

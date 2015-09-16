@@ -57,11 +57,18 @@ namespace CS562
 		g_buff->AttachTexture(Attachments::Depth, attachments[Buffers::Depth]);
 	}
 
-	void GBuffer::BindTextures(unsigned starting_idx)
+	void GBuffer::BindTextures(unsigned starting_idx, bool include_light)
 	{
-		for (unsigned i = 0; i < Buffers::NumBuffs; ++i)
+		unsigned start = 1;
+		if (include_light)
+			start = 0;
+
+		for (unsigned i = start; i < Buffers::NumBuffs; ++i)
 		{
-			attachments[i]->Bind_NoUnbind(starting_idx + i);
+			if (include_light)
+				attachments[i]->Bind_NoUnbind(starting_idx + i);
+			else
+				attachments[i]->Bind_NoUnbind(starting_idx + i - 1);
 		}
 	}
 
