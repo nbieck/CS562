@@ -190,7 +190,8 @@ namespace CS562
 			gl::DepthFunc(gl::LESS);
 			gl::Enable(gl::CULL_FACE);
 
-			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+			gl::BlendFunc(gl::ONE, gl::ONE);
+			gl::BlendEquation(gl::FUNC_ADD);
 
 			if (wgl::exts::var_EXT_swap_control)
 			{
@@ -291,6 +292,8 @@ namespace CS562
 					auto unbind_shader = ambient_shader->Bind();
 					FSQ->Draw(PrimitiveTypes::Triangles, 6);
 				}
+				gl::BlendFunc(gl::ONE, gl::ONE);
+				gl::Enable(gl::BLEND);
 
 				{
 					auto unbind_shader = light_shader->Bind();
@@ -312,6 +315,8 @@ namespace CS562
 			}
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
 				Buffers::Specular, Buffers::Alpha});
+
+			gl::Disable(gl::BLEND);
 		}
 
 		void CopyBufferPass()

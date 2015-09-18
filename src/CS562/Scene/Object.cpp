@@ -46,6 +46,14 @@ namespace CS562
 		child->SetParent(shared_from_this());
 	}
 
+	void Object::RemoveChild(const std::shared_ptr<Object>& child)
+	{
+		auto it = std::find(children_.begin(), children_.end(), child);
+		
+		if (it != children_.end())
+			children_.erase(it);
+	}
+
 	void Object::SetParent(const std::weak_ptr<Object>& parent)
 	{
 		parent_ = parent;

@@ -39,18 +39,6 @@ namespace CS562
 		{
 			AddObject(glm::vec3(0), shader, g.first, mtl[g.second]);
 		}
-
-		Transformation t;
-		t.position = glm::vec3(0, 3, 0);
-		t.scale = glm::vec3(1);
-
-		std::shared_ptr<Object> obj = std::make_shared<Object>(t);
-		scene_root_->AddChild(obj);
-		std::shared_ptr<Light> l = std::make_shared<Light>(obj->GetGlobalTrans());
-		l->color = glm::vec3(1, 0, 0);
-		obj->light = l;
-
-		gfx_.RegisterLight(l);
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
@@ -86,6 +74,34 @@ namespace CS562
 		CompObjListRec(scene_root_, list);
 
 		return list;
+	}
+
+	void SceneManager::PushLight()
+	{	
+		Transformation t;
+		t.position = glm::vec3(0, 3, 0);
+		t.scale = glm::vec3(1);
+
+		std::shared_ptr<Object> obj = std::make_shared<Object>(t);
+		scene_root_->AddChild(obj);
+		std::shared_ptr<Light> l = std::make_shared<Light>(obj->GetGlobalTrans());
+		l->color = glm::vec3(1, 0, 0);
+		obj->light = l;
+
+		gfx_.RegisterLight(l);
+
+		lights_.push_back(obj);
+	}
+
+	void SceneManager::PopLight()
+	{
+		if (!lights_.empty())
+		{
+			auto obj = lights_.back();
+			lights_.pop_back();
+
+			scene_root_->RemoveChild(obj);
+		}
 	}
 
 	void SceneManager::CompObjListRec(std::shared_ptr<Object> node, std::vector<std::shared_ptr<Object>>& list)

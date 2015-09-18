@@ -44,6 +44,11 @@ namespace CS562
 			cam_control.Update();
 			scene.Update();
 
+			if (input.isKeyTriggered('O'))
+				scene.PushLight();
+			if (input.isKeyTriggered('P'))
+				scene.PopLight();
+
 			if (gui.GuiVisible())
 			{
 				gui.StartGuiWindow();		

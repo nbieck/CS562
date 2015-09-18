@@ -32,6 +32,7 @@ namespace CS562
 
 		void AddChild(const std::shared_ptr<Object>& child);
 
+		void RemoveChild(const std::shared_ptr<Object>& child);
 		std::shared_ptr<Camera> cam;
 		std::shared_ptr<Drawable> drawable;
 		std::shared_ptr<Light> light;
