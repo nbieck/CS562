@@ -13,7 +13,9 @@ namespace CS562
 		: owner_world_trans_(owner_trans)
 	{}
 
-	void Light::SetUniforms(const std::shared_ptr<ShaderProgram>& prog, const glm::mat4& view)
+	void Light::SetUniforms(const std::shared_ptr<ShaderProgram>& prog)
 	{
+        prog->SetUniform("Light.color",color);
+		prog->SetUniform("Light.position", owner_world_trans_.position);
 	}
 }

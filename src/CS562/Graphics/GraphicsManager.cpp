@@ -50,8 +50,10 @@ namespace CS562
 		std::shared_ptr<Buffer<glm::vec3>> quad_buffer;
 
 		std::shared_ptr<ShaderProgram> ambient_shader;
+		std::shared_ptr<ShaderProgram> light_shader;
 
 		std::list<std::weak_ptr<Drawable>> drawables;
+		std::list<std::weak_ptr<Light>> lights;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
 			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid)
@@ -226,10 +228,18 @@ namespace CS562
 
 			ambient_shader->SetUniform("Diffuse", 3);
 			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.1f));
+
+			light_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/deferred_light.shader");
+
+			light_shader->SetUniform("Position", 1);
+			light_shader->SetUniform("Normal", 2);
+			light_shader->SetUniform("Diffuse", 3);
 		}
 
 		void GeometryPass()
 		{
+			gl::Enable(gl::DEPTH_TEST);
+
 			auto unbind = g_buffer->g_buff->Bind();
 			gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
@@ -269,6 +279,8 @@ namespace CS562
 
 		void LightingPass()
 		{
+			gl::Disable(gl::DEPTH_TEST);
+
 			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});
 			{
@@ -279,6 +291,24 @@ namespace CS562
 					auto unbind_shader = ambient_shader->Bind();
 					FSQ->Draw(PrimitiveTypes::Triangles, 6);
 				}
+
+				{
+					auto unbind_shader = light_shader->Bind();
+					for (auto l = lights.begin(); l != lights.end();)
+					{
+						if (l->expired())
+						{
+							l = lights.erase(l);
+							continue;
+						}
+
+						auto light = l->lock();
+						light->SetUniforms(light_shader);
+						FSQ->Draw(PrimitiveTypes::Triangles, 6);
+
+						l++;
+					}
+				}
 			}
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
 				Buffers::Specular, Buffers::Alpha});
@@ -286,6 +316,8 @@ namespace CS562
 
 		void CopyBufferPass()
 		{
+			gl::Disable(gl::DEPTH_TEST);
+
 			g_buffer->BindTextures(1);
 
 			auto unbind_shader = buffer_copy->Bind();
@@ -326,6 +358,11 @@ namespace CS562
 	void GraphicsManager::RegisterDrawable(const std::weak_ptr<Drawable>& drawable)
 	{
 		impl->drawables.push_back(drawable);
+	}
+
+	void GraphicsManager::RegisterLight(const std::weak_ptr<Light>& light)
+	{
+		impl->lights.push_back(light);
 	}
 
 	void GraphicsManager::SetDrawmode(Drawmode mode)

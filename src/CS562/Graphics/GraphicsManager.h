@@ -48,6 +48,8 @@ namespace CS562
 
 		void RegisterDrawable(const std::weak_ptr<Drawable>& drawable);
 
+		void RegisterLight(const std::weak_ptr<Light>& light);
+
 		void SetDrawmode(Drawmode mode);
 
 		void SetShownBuffer(int buffer);

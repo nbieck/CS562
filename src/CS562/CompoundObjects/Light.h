@@ -21,7 +21,10 @@ namespace CS562
 	public:
 		Light(const Transformation& owner_trans);
 
-		void SetUniforms(const std::shared_ptr<ShaderProgram>& prog, const glm::mat4& view);
+		void SetUniforms(const std::shared_ptr<ShaderProgram>& prog);
+
+		glm::vec3 color;
+		float intensity;
 
 	private:
 
