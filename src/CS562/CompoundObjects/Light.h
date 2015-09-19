@@ -25,6 +25,7 @@ namespace CS562
 
 		glm::vec3 color;
 		float intensity;
+		float max_distance;
 
 	private:
 

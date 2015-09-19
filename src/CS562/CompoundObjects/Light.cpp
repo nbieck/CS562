@@ -17,5 +17,7 @@ namespace CS562
 	{
         prog->SetUniform("Light.color",color);
 		prog->SetUniform("Light.position", owner_world_trans_.position);
+		prog->SetUniform("Light.intensity", intensity);
+		prog->SetUniform("Light.max_distance", max_distance);
 	}
 }

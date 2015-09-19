@@ -86,6 +86,8 @@ namespace CS562
 		scene_root_->AddChild(obj);
 		std::shared_ptr<Light> l = std::make_shared<Light>(obj->GetGlobalTrans());
 		l->color = glm::vec3(1, 0, 0);
+		l->intensity = 1;
+		l->max_distance = 100;
 		obj->light = l;
 
 		gfx_.RegisterLight(l);
