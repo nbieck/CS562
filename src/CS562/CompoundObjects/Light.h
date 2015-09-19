@@ -27,7 +27,7 @@ namespace CS562
 		float intensity;
 		float max_distance;
 
-	private:
+	//private:
 
 		const Transformation& owner_world_trans_;
 	};

@@ -49,6 +49,9 @@ namespace CS562
 		std::shared_ptr<ShaderProgram> buffer_copy;
 		std::shared_ptr<Buffer<glm::vec3>> quad_buffer;
 
+		std::shared_ptr<Geometry> sphere;
+		std::shared_ptr<ShaderProgram> light_sphere_shader;
+
 		std::shared_ptr<ShaderProgram> ambient_shader;
 		std::shared_ptr<ShaderProgram> light_shader;
 
@@ -235,6 +238,14 @@ namespace CS562
 			light_shader->SetUniform("Position", 1);
 			light_shader->SetUniform("Normal", 2);
 			light_shader->SetUniform("Diffuse", 3);
+
+			light_sphere_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/light_marker.shader");
+			
+			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
+			std::vector<std::shared_ptr<Material>> mats;
+			ResourceLoader::LoadObjFile(geom, mats, "meshes/sphere.obj");
+
+			sphere = geom[0].first;
 		}
 
 		void GeometryPass()
@@ -275,6 +286,21 @@ namespace CS562
 					gl::Enable(gl::CULL_FACE);
 					gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
 				}
+
+				for (auto l : lights)
+				{
+					if (!l.expired())
+					{
+						auto light = l.lock();
+
+						auto unbind_shader = light_sphere_shader->Bind();
+
+						light_sphere_shader->SetUniform("MVP", proj * view * light->owner_world_trans_.GetMatrix());
+						light_sphere_shader->SetUniform("color", light->color);
+
+						sphere->Draw();
+					}
+				}
 			}
 		}
 
@@ -285,6 +311,9 @@ namespace CS562
 			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});
 			{
+				gl::BlendFunc(gl::ONE, gl::ONE);
+				gl::Enable(gl::BLEND);
+
 				g_buffer->BindTextures(1, false);
 				auto unbind_vao = FSQ->Bind();
 
@@ -292,8 +321,6 @@ namespace CS562
 					auto unbind_shader = ambient_shader->Bind();
 					FSQ->Draw(PrimitiveTypes::Triangles, 6);
 				}
-				gl::BlendFunc(gl::ONE, gl::ONE);
-				gl::Enable(gl::BLEND);
 
 				{
 					auto unbind_shader = light_shader->Bind();
