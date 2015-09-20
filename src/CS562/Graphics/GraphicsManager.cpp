@@ -14,6 +14,7 @@
 #include "../GLWrapper/ShaderProgram.h"
 #include "../ResourceLoader/ResourceLoader.h"
 #include "../CompoundObjects/GBuffer.h"
+#include "../Transformation/Transformation.h"
 
 #include "../ImGui/imgui.h"
 
@@ -314,6 +315,10 @@ namespace CS562
 			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});
 			{
+				glm::mat4 view, proj;
+				view = owner.current_cam->GetViewMatrix();
+				proj = owner.current_cam->GetProjectionMatrix();
+
 				gl::BlendFunc(gl::ONE, gl::ONE);
 				gl::Enable(gl::BLEND);
 
@@ -325,6 +330,8 @@ namespace CS562
 					FSQ->Draw(PrimitiveTypes::Triangles, 6);
 				}
 
+				gl::Enable(gl::DEPTH_TEST);
+				gl::DepthMask(gl::FALSE_);
 				{
 					auto unbind_shader = light_shader->Bind();
 					for (auto l = lights.begin(); l != lights.end();)
@@ -337,11 +344,17 @@ namespace CS562
 
 						auto light = l->lock();
 						light->SetUniforms(light_shader);
-						FSQ->Draw(PrimitiveTypes::Triangles, 6);
+						Transformation l_t = light->owner_world_trans_;
+						l_t.scale = glm::vec3(light->max_distance);
+
+						light_shader->SetUniform("MVP", proj * view * l_t.GetMatrix());
+						
+						sphere->Draw();
 
 						l++;
 					}
 				}
+				gl::DepthMask(gl::TRUE_);
 			}
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
 				Buffers::Specular, Buffers::Alpha});

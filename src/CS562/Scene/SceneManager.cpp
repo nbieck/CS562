@@ -33,7 +33,7 @@ namespace CS562
 		std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 		std::vector<std::shared_ptr<Material>> mtl;
 
-		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
+		ResourceLoader::LoadObjFile(geom, mtl, "rungholt.obj");
 
 		for (auto g : geom)
 		{
@@ -45,7 +45,7 @@ namespace CS562
 	{
 		Transformation t;
 		t.position = position;
-		t.scale = glm::vec3(.1f, .1f, .1f);
+		t.scale = glm::vec3(1.f, 1.f, 1.f);
 
 		std::shared_ptr<Object> drawable_obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(drawable_obj);
@@ -80,17 +80,17 @@ namespace CS562
 	{	
 		Transformation t;
 
-		std::uniform_real_distribution<float> pos_x(-100, 100);
+		std::uniform_real_distribution<float> pos_x(-350, 350);
 		std::uniform_real_distribution<float> pos_y(0, 30);
-		std::uniform_real_distribution<float> pos_z(-200, 200);
+		std::uniform_real_distribution<float> pos_z(-275, 275);
 
-		std::uniform_real_distribution<float> intensity(0.1f, 4);
-		std::uniform_real_distribution<float> dist(5, 50);
+		std::uniform_real_distribution<float> intensity(0.1f, 1);
+		std::uniform_real_distribution<float> dist(1, 10);
 
 		std::uniform_real_distribution<float> color(0, 1);
 
 		t.position = glm::vec3(pos_x(random_engine), pos_y(random_engine), pos_z(random_engine));
-		t.scale = glm::vec3(1);
+		t.scale = glm::vec3(.1f);
 
 		std::shared_ptr<Object> obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(obj);

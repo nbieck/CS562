@@ -44,6 +44,10 @@ void main()
 
     vec3 Pos = texelFetch(Position, pixel_pos, 0).xyz;
 
+    float dist = length(Light.position - Pos);
+    if (dist > Light.max_distance)
+        discard;
+
     vec3 L = normalize(Light.position - Pos);
     vec3 N = normalize(texelFetch(Normal, pixel_pos, 0).xyz);
     
@@ -54,7 +58,7 @@ void main()
     vec3 V = normalize(CamPos - Pos);
     vec3 H = normalize(V + L);
 
-    float attenuation = CalcAttenuation(length(Light.position - Pos));
+    float attenuation = CalcAttenuation(dist);
 
     OutColor = CalcDiffuse(L, N, DiffColor) * attenuation;
     OutColor += CalcSpecular(V, N, SpecColor, Shine) * attenuation;
