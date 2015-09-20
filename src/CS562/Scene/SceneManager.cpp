@@ -79,15 +79,25 @@ namespace CS562
 	void SceneManager::PushLight()
 	{	
 		Transformation t;
-		t.position = glm::vec3(0, 3, 0);
+
+		std::uniform_real_distribution<float> pos_x(-100, 100);
+		std::uniform_real_distribution<float> pos_y(0, 30);
+		std::uniform_real_distribution<float> pos_z(-200, 200);
+
+		std::uniform_real_distribution<float> intensity(0.1f, 4);
+		std::uniform_real_distribution<float> dist(5, 50);
+
+		std::uniform_real_distribution<float> color(0, 1);
+
+		t.position = glm::vec3(pos_x(random_engine), pos_y(random_engine), pos_z(random_engine));
 		t.scale = glm::vec3(1);
 
 		std::shared_ptr<Object> obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(obj);
 		std::shared_ptr<Light> l = std::make_shared<Light>(obj->GetGlobalTrans());
-		l->color = glm::vec3(1, 1, 1);
-		l->intensity = 1;
-		l->max_distance = 100;
+		l->color = glm::vec3(color(random_engine), color(random_engine), color(random_engine));
+		l->intensity = intensity(random_engine);
+		l->max_distance = dist(random_engine);
 		obj->light = l;
 
 		gfx_.RegisterLight(l);

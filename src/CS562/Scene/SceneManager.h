@@ -14,6 +14,7 @@
 #include "../FrameTimer/FrameTimer.h"
 
 #include <memory>
+#include <random>
 
 namespace CS562
 {
@@ -41,6 +42,8 @@ namespace CS562
 		void CompObjListRec(std::shared_ptr<Object> node, std::vector<std::shared_ptr<Object>>& list);
 
 		std::vector<std::shared_ptr<Object>> lights_;
+
+		std::mt19937_64 random_engine;
 
 		GraphicsManager& gfx_;
 		FrameTimer& time_;

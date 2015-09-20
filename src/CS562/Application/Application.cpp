@@ -35,6 +35,12 @@ namespace CS562
 		int show_buffer = DrawBuffers::LightAccum;
 		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
 
+		int num_lights = 10;
+		int curr_lights = 10;
+
+		for (unsigned i = 0; i < 10; ++i)
+			scene.PushLight();
+
 		while (running_)
 		{
 			time.Update();
@@ -56,6 +62,13 @@ namespace CS562
 				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 6))
 					gfx.SetShownBuffer(show_buffer);
 
+				if (ImGui::SliderInt("NumLights", &num_lights, 0, 2000))
+				{
+					for (; num_lights > curr_lights; ++curr_lights)
+						scene.PushLight();
+					for (; num_lights < curr_lights; --curr_lights)
+						scene.PopLight();
+				}
 				gui.EndGuiWindow();
 			}
 
