@@ -15,6 +15,12 @@ void CS562::Material::SetUniforms(std::shared_ptr<ShaderProgram> shader)
 
 		shader->SetUniform("DiffuseTex", 1);
 	}
+	if (specular_tex)
+	{
+		specular_tex->Bind_NoUnbind(2);
+		shader->SetUniform("SpecularTex", 2);
+	}
+	shader->SetUniform("SpecularCoefficient", shininess);
 }
 
 void CS562::Material::Cleanup()
@@ -23,4 +29,6 @@ void CS562::Material::Cleanup()
 	{
 		diffuse_tex->Unbind();
 	}
+	if (specular_tex)
+		specular_tex->Unbind();
 }

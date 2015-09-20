@@ -157,6 +157,8 @@ namespace CS562
 			{
 				auto mat = std::make_shared<Material>();
 				mat->diffuse_tex = LoadTextureFromFile(material.diffuse_texname);
+				mat->specular_tex = LoadTextureFromFile(material.specular_texname);
+				mat->shininess = material.shininess;
 
 				mats.push_back(mat);
 			}

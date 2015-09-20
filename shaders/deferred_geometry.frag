@@ -5,6 +5,9 @@ in vec3 w_normal;
 in vec2 uv;
 
 uniform sampler2D DiffuseTex;
+uniform sampler2D SpecularTex;
+
+uniform float SpecularCoefficient;
 
 layout(location = 0) out vec3 LightAccumulation;
 layout(location = 1) out vec3 Position;
@@ -19,6 +22,6 @@ void main()
     Position = w_position;
     Normal = normalize(w_normal);
     Diffuse = texture(DiffuseTex, uv).rgb;
-    Specular = vec3(0);
-    Shininess = 128;
+    Specular = texture(SpecularTex, uv).rgb;
+    Shininess = SpecularCoefficient;
 }

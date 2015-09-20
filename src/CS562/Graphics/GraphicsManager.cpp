@@ -238,6 +238,8 @@ namespace CS562
 			light_shader->SetUniform("Position", 1);
 			light_shader->SetUniform("Normal", 2);
 			light_shader->SetUniform("Diffuse", 3);
+			light_shader->SetUniform("Specular", 4);
+			light_shader->SetUniform("Shininess", 5);
 
 			light_sphere_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/light_marker.shader");
 			
@@ -307,6 +309,7 @@ namespace CS562
 		void LightingPass()
 		{
 			gl::Disable(gl::DEPTH_TEST);
+			light_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
 
 			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});

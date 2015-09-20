@@ -28,7 +28,7 @@ namespace CS562
 		glm::mat4 GetViewMatrix() const;
 		glm::mat4 GetProjectionMatrix() const;
 
-	private:
+	//private:
 
 		const Transformation& owner_world_trans_;
 	};
