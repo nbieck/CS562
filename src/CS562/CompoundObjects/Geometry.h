@@ -39,6 +39,7 @@ namespace CS562
 
 		//this assumes that shaders have been bound and uniforms set correctly
 		void Draw();
+		void DrawInstanced(unsigned num_instances);
 
 		const std::vector<Vertex> vertices;
 		const std::vector<unsigned> indices;

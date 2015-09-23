@@ -21,6 +21,7 @@ namespace CS562
 			Vertex		 = 0x8892,
 			Index		 = 0x8893,
 			DrawIndirect = 0x8F3F,
+			ShaderStorage = 0x90D2,
 		};
 	}
 
@@ -29,6 +30,7 @@ namespace CS562
 	public:
 
 		virtual Unbinder<IBindableBuffer> Bind(BufferTargets::BufferTargets) = 0;
+		virtual Unbinder<IBindableBuffer> Bind(BufferTargets::BufferTargets target, unsigned index) = 0;
 		virtual void Unbind() = 0;
 
 		virtual unsigned GetGLObject() = 0;

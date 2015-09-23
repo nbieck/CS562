@@ -56,6 +56,14 @@ namespace CS562
 		std::shared_ptr<ShaderProgram> ambient_shader;
 		std::shared_ptr<ShaderProgram> light_shader;
 
+		struct LightSphereData
+		{
+			glm::mat4 MVP;
+			glm::vec3 color;
+			float spacing;
+		};
+		std::unique_ptr<Buffer<LightSphereData>> light_sphere_MVP_buffer;
+
 		std::list<std::weak_ptr<Drawable>> drawables;
 		std::list<std::weak_ptr<Light>> lights;
 
@@ -232,7 +240,7 @@ namespace CS562
 			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
 
 			ambient_shader->SetUniform("Diffuse", 3);
-			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.1f));
+			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.2f));
 
 			light_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/deferred_light.shader");
 
@@ -251,6 +259,13 @@ namespace CS562
 			sphere = geom[0].first;
 		}
 
+		void SetupBuffers()
+		{
+			light_sphere_MVP_buffer = std::make_unique<Buffer<LightSphereData>>();
+			auto unbind = light_sphere_MVP_buffer->Bind(BufferTargets::Vertex);
+			light_sphere_MVP_buffer->ResizeableStorage(1000);
+		}
+		
 		void GeometryPass()
 		{
 			gl::Enable(gl::DEPTH_TEST);
@@ -290,20 +305,39 @@ namespace CS562
 					gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
 				}
 
-				for (auto l : lights)
+				unsigned idx = 0;
 				{
-					if (!l.expired())
+					auto unbind_buff = light_sphere_MVP_buffer->Bind(BufferTargets::Vertex);
+					if (light_sphere_MVP_buffer->GetSize() < lights.size())
 					{
-						auto light = l.lock();
-
-						auto unbind_shader = light_sphere_shader->Bind();
-
-						light_sphere_shader->SetUniform("MVP", proj * view * light->owner_world_trans_.GetMatrix());
-						light_sphere_shader->SetUniform("color", light->color);
-
-						sphere->Draw();
+						light_sphere_MVP_buffer->ResizeableStorage(static_cast<unsigned>(lights.size()));
 					}
+
+					auto * data = light_sphere_MVP_buffer->Map(MapModes::Write);
+
+					for (auto it = lights.begin(); it != lights.end();)
+					{
+						if (it->expired())
+						{
+							it = lights.erase(it);
+							continue;
+						}
+
+						auto light = it->lock();
+						data[idx].MVP = light->owner_world_trans_.GetMatrix();
+						data[idx].color = light->color;
+
+						idx++;
+						it++;
+					}
+
+					light_sphere_MVP_buffer->Unmap();
 				}
+
+				auto unbind_buff = light_sphere_MVP_buffer->Bind(BufferTargets::ShaderStorage, 0);
+				light_sphere_shader->SetUniform("ViewProj", proj * view);
+				auto unbind_shader = light_sphere_shader->Bind();
+				sphere->DrawInstanced(idx);
 			}
 		}
 
@@ -386,6 +420,7 @@ namespace CS562
 		impl->g_buffer = std::make_unique<GBuffer>(width, height);
 		impl->SetupFSQ();
 		impl->SetupShaders();
+		impl->SetupBuffers();
 	}
 
 	void GraphicsManager::Update()

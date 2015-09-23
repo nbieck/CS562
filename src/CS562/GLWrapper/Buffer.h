@@ -80,6 +80,7 @@ namespace CS562
 		void ResizeableStorage(unsigned size, const Data* data = nullptr);
 
 		Unbinder<IBindableBuffer> Bind(BufferTargets::BufferTargets target) override;
+		Unbinder<IBindableBuffer> Bind(BufferTargets::BufferTargets target, unsigned index) override;
 		// this will bind the buffer without creating an unbinder object
 		//intended for use with index buffers, that never get unbound
 		void BindWithoutUnbind(BufferTargets::BufferTargets target);
@@ -99,6 +100,9 @@ namespace CS562
 		unsigned gl_object_;
 
 		BufferTargets::BufferTargets last_bind_target_;
+		unsigned last_bind_loc_;
+		bool indexed_binding_;
+		
 		unsigned size_;
 	};
 }

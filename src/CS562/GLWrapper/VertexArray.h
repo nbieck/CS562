@@ -113,6 +113,8 @@ namespace CS562
 		//draw (not directly connected with this, but makes most sense imo)
 		void Draw(PrimitiveTypes::PrimitiveTypes type, unsigned num_vertices, unsigned offset = 0);
 
+		void DrawInstanced(PrimitiveTypes::PrimitiveTypes type, unsigned num_vertices, unsigned num_instances, unsigned offset = 0);
+
 	private:
 
 		unsigned gl_object_;

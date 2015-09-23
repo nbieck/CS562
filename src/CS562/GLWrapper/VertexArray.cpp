@@ -67,4 +67,10 @@ namespace CS562
 		else
 			gl::DrawArrays(type, offset, num_vertices);
 	}
+
+	void VertexArray::DrawInstanced(PrimitiveTypes::PrimitiveTypes type, unsigned num_vertices, unsigned num_instances, unsigned offset)
+	{
+		if (has_index_buffer_)
+			gl::DrawElementsInstanced(type, num_vertices, gl::UNSIGNED_INT, reinterpret_cast<GLvoid*>(offset * sizeof(unsigned)), num_instances);
+	}
 }

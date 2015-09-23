@@ -85,12 +85,12 @@ namespace CS562
 		std::uniform_real_distribution<float> pos_z(-275, 275);
 
 		std::uniform_real_distribution<float> intensity(0.1f, 1);
-		std::uniform_real_distribution<float> dist(1, 10);
+		std::uniform_real_distribution<float> dist(5, 30);
 
 		std::uniform_real_distribution<float> color(0, 1);
 
 		t.position = glm::vec3(pos_x(random_engine), pos_y(random_engine), pos_z(random_engine));
-		t.scale = glm::vec3(.1f);
+		t.scale = glm::vec3(0.1f);
 
 		std::shared_ptr<Object> obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(obj);

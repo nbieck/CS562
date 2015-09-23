@@ -7,6 +7,7 @@
 
 
 #include "../OpenGL/gl_core_4_4.hpp"
+#include "Buffer.h"
 
 namespace CS562
 {
@@ -53,6 +54,19 @@ namespace CS562
 	{
 		last_bind_target_ = target;
 		gl::BindBuffer(target, gl_object_);
+		indexed_binding_ = false;
+
+		return Unbinder<IBindableBuffer>(*this);
+	}
+
+	template<typename Data>
+	inline Unbinder<IBindableBuffer> Buffer<Data>::Bind(BufferTargets::BufferTargets target, unsigned index)
+	{
+		last_bind_target_ = target;
+		last_bind_loc_ = index;
+		indexed_binding_ = true;
+
+		gl::BindBufferBase(target, index, gl_object_);
 
 		return Unbinder<IBindableBuffer>(*this);
 	}
@@ -62,12 +76,16 @@ namespace CS562
 	{
 		last_bind_target_ = target;
 		gl::BindBuffer(target, gl_object_);
+		indexed_binding_ = false;
 	}
 
 	template <typename Data>
 	void Buffer<Data>::Unbind()
 	{
-		gl::BindBuffer(last_bind_target_, 0);
+		if (!indexed_binding_)
+			gl::BindBuffer(last_bind_target_, 0);
+		else
+			gl::BindBufferBase(last_bind_target_, last_bind_loc_, 0);
 	}
 
 	template <typename Data>

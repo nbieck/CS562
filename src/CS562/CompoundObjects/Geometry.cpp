@@ -40,4 +40,10 @@ namespace CS562
 		auto unbind = vao_->Bind();
 		vao_->Draw(type_, num_indices_);
 	}
+
+	void Geometry::DrawInstanced(unsigned num_instances)
+	{
+		auto unbind = vao_->Bind();
+		vao_->DrawInstanced(type_, num_indices_, num_instances);
+	}
 }

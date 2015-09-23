@@ -1,6 +1,17 @@
 #version 440
 
-uniform vec3 color;
+struct LightSphereData
+{
+    mat4 model;
+    vec3 color;
+};
+
+layout(std140, binding = 0) buffer data
+{
+    LightSphereData d[];
+};
+
+flat in int instance_ID;
 
 layout(location = 0) out vec3 LightAccumulation;
 layout(location = 1) out vec3 Position;
@@ -11,7 +22,7 @@ layout(location = 5) out float Shininess;
 
 void main()
 {
-    LightAccumulation = color;
+    LightAccumulation = d[instance_ID].color;
     Position = vec3(0);
     Normal = vec3(0);
     Diffuse = vec3(0);
