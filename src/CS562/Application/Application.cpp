@@ -62,7 +62,7 @@ namespace CS562
 				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 6))
 					gfx.SetShownBuffer(show_buffer);
 
-				if (ImGui::SliderInt("NumLights", &num_lights, 0, 5000))
+				if (ImGui::SliderInt("NumLights", &num_lights, 0, 10000))
 				{
 					for (; num_lights > curr_lights; ++curr_lights)
 						scene.PushLight();

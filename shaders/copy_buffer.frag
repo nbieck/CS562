@@ -18,7 +18,7 @@ void main()
     if (BufferToShow == 0)
         outColor = texelFetch(LightAccumulation, texel_coord, 0);
     else if (BufferToShow == 1)
-        outColor = abs(texelFetch(Position, texel_coord, 0) / vec4(350, 70, 275, 1));
+        outColor = abs(texelFetch(Position, texel_coord, 0) / vec4(200, 140, 115, 1));
     else if (BufferToShow == 2)
         outColor = abs(texelFetch(Normal, texel_coord, 0));
     else if (BufferToShow == 3)

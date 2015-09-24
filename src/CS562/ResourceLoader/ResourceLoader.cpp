@@ -174,7 +174,8 @@ namespace CS562
 			return pre_loaded->second.lock();
 
 		int x, y, components;
-		unsigned char* img_data = stbi_load(filename.c_str(), &x, &y, &components, STBI_default);
+		unsigned char* img_data = stbi_load(filename.c_str(), &x, &y, &components, STBI_rgb_alpha);
+		components = 4;
 
 		if (img_data == nullptr)
 			return nullptr;

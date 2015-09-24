@@ -64,6 +64,16 @@ namespace CS562
 		};
 		std::unique_ptr<Buffer<LightSphereData>> light_sphere_MVP_buffer;
 
+		struct LightData
+		{
+			glm::mat4 model_mat;
+			glm::vec3 position;
+			float intensity;
+			glm::vec3 color;
+			float max_distance;
+		};
+		std::unique_ptr<Buffer<LightData>> light_data_buffer;
+
 		std::list<std::weak_ptr<Drawable>> drawables;
 		std::list<std::weak_ptr<Light>> lights;
 
@@ -262,8 +272,15 @@ namespace CS562
 		void SetupBuffers()
 		{
 			light_sphere_MVP_buffer = std::make_unique<Buffer<LightSphereData>>();
-			auto unbind = light_sphere_MVP_buffer->Bind(BufferTargets::Vertex);
-			light_sphere_MVP_buffer->ResizeableStorage(1000);
+			{
+				auto unbind = light_sphere_MVP_buffer->Bind(BufferTargets::Vertex);
+				light_sphere_MVP_buffer->ResizeableStorage(1000);
+			}
+			light_data_buffer = std::make_unique<Buffer<LightData>>();
+			{
+				auto unbind = light_data_buffer->Bind(BufferTargets::Vertex);
+				light_data_buffer->ResizeableStorage(1000);
+			}
 		}
 		
 		void GeometryPass()
@@ -365,30 +382,45 @@ namespace CS562
 				}
 
 				gl::Enable(gl::DEPTH_TEST);
+				gl::CullFace(gl::FRONT);
+				gl::DepthFunc(gl::GREATER);
 				gl::DepthMask(gl::FALSE_);
 				{
 					auto unbind_shader = light_shader->Bind();
-					for (auto l = lights.begin(); l != lights.end();)
+
 					{
-						if (l->expired())
+						auto unbind_buff = light_data_buffer->Bind(BufferTargets::ShaderStorage);
+						if (light_data_buffer->GetSize() < lights.size())
+							light_data_buffer->ResizeableStorage(static_cast<unsigned>(lights.size()));
+
+						auto data = light_data_buffer->Map(MapModes::Write);
+						unsigned idx = 0;
+						for (auto l : lights)
 						{
-							l = lights.erase(l);
-							continue;
+							auto light = l.lock();
+
+							Transformation l_t = light->owner_world_trans_;
+							l_t.scale = glm::vec3(light->max_distance);
+
+							data[idx].model_mat = l_t.GetMatrix();
+							data[idx].color = light->color;
+							data[idx].position = light->owner_world_trans_.position;
+							data[idx].intensity = light->intensity;
+							data[idx].max_distance = light->max_distance;
+
+							idx++;
 						}
 
-						auto light = l->lock();
-						light->SetUniforms(light_shader);
-						Transformation l_t = light->owner_world_trans_;
-						l_t.scale = glm::vec3(light->max_distance);
-
-						light_shader->SetUniform("MVP", proj * view * l_t.GetMatrix());
-						
-						sphere->Draw();
-
-						l++;
+						light_data_buffer->Unmap();
 					}
+
+					light_shader->SetUniform("ViewProj", proj * view);
+					auto unbind_buff = light_data_buffer->Bind(BufferTargets::ShaderStorage, 0);
+					sphere->DrawInstanced(static_cast<unsigned>(lights.size()));
 				}
 				gl::DepthMask(gl::TRUE_);
+				gl::DepthFunc(gl::LESS);
+				gl::CullFace(gl::BACK);
 			}
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
 				Buffers::Specular, Buffers::Alpha});
