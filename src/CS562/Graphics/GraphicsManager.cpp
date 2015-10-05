@@ -55,6 +55,11 @@ namespace CS562
 
 		std::shared_ptr<ShaderProgram> ambient_shader;
 		std::shared_ptr<ShaderProgram> light_shader;
+		std::shared_ptr<ShaderProgram> shadow_light_shader;
+		std::shared_ptr<ShaderProgram> shadow_map_shader;
+
+		std::unique_ptr<Framebuffer> shadow_buffer;
+		std::shared_ptr<Texture> shadow_map;
 
 		struct LightSphereData
 		{
@@ -76,6 +81,7 @@ namespace CS562
 
 		std::list<std::weak_ptr<Drawable>> drawables;
 		std::list<std::weak_ptr<Light>> lights;
+		std::list<std::weak_ptr<Light>> shadowing_lights;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
 			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid)
@@ -358,6 +364,56 @@ namespace CS562
 			}
 		}
 
+		void NonShadowLights(const glm::mat4& view, const glm::mat4& proj)
+		{
+			gl::Enable(gl::DEPTH_TEST);
+			gl::CullFace(gl::FRONT);
+			gl::DepthFunc(gl::GREATER);
+			gl::DepthMask(gl::FALSE_);
+			{
+				auto unbind_shader = light_shader->Bind();
+
+				{
+					auto unbind_buff = light_data_buffer->Bind(BufferTargets::ShaderStorage);
+					if (light_data_buffer->GetSize() < lights.size())
+						light_data_buffer->ResizeableStorage(static_cast<unsigned>(lights.size()));
+
+					auto data = light_data_buffer->Map(MapModes::Write);
+					unsigned idx = 0;
+					for (auto l : lights)
+					{
+						auto light = l.lock();
+
+						Transformation l_t = light->owner_world_trans_;
+						l_t.scale = glm::vec3(light->max_distance);
+
+						data[idx].model_mat = l_t.GetMatrix();
+						data[idx].color = light->color;
+						data[idx].position = light->owner_world_trans_.position;
+						data[idx].intensity = light->intensity;
+						data[idx].max_distance = light->max_distance;
+
+						idx++;
+					}
+
+					light_data_buffer->Unmap();
+				}
+
+				light_shader->SetUniform("ViewProj", proj * view);
+				auto unbind_buff = light_data_buffer->Bind(BufferTargets::ShaderStorage, 0);
+				sphere->DrawInstanced(static_cast<unsigned>(lights.size()));
+			}
+			gl::DepthMask(gl::TRUE_);
+			gl::DepthFunc(gl::LESS);
+			gl::CullFace(gl::BACK);
+
+		}
+
+		void ShadowLights(const glm::mat4& view, const glm::mat4& proj)
+		{
+
+		}
+
 		void LightingPass()
 		{
 			gl::Disable(gl::DEPTH_TEST);
@@ -381,46 +437,7 @@ namespace CS562
 					FSQ->Draw(PrimitiveTypes::Triangles, 6);
 				}
 
-				gl::Enable(gl::DEPTH_TEST);
-				gl::CullFace(gl::FRONT);
-				gl::DepthFunc(gl::GREATER);
-				gl::DepthMask(gl::FALSE_);
-				{
-					auto unbind_shader = light_shader->Bind();
-
-					{
-						auto unbind_buff = light_data_buffer->Bind(BufferTargets::ShaderStorage);
-						if (light_data_buffer->GetSize() < lights.size())
-							light_data_buffer->ResizeableStorage(static_cast<unsigned>(lights.size()));
-
-						auto data = light_data_buffer->Map(MapModes::Write);
-						unsigned idx = 0;
-						for (auto l : lights)
-						{
-							auto light = l.lock();
-
-							Transformation l_t = light->owner_world_trans_;
-							l_t.scale = glm::vec3(light->max_distance);
-
-							data[idx].model_mat = l_t.GetMatrix();
-							data[idx].color = light->color;
-							data[idx].position = light->owner_world_trans_.position;
-							data[idx].intensity = light->intensity;
-							data[idx].max_distance = light->max_distance;
-
-							idx++;
-						}
-
-						light_data_buffer->Unmap();
-					}
-
-					light_shader->SetUniform("ViewProj", proj * view);
-					auto unbind_buff = light_data_buffer->Bind(BufferTargets::ShaderStorage, 0);
-					sphere->DrawInstanced(static_cast<unsigned>(lights.size()));
-				}
-				gl::DepthMask(gl::TRUE_);
-				gl::DepthFunc(gl::LESS);
-				gl::CullFace(gl::BACK);
+				NonShadowLights(view, proj);
 			}
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
 				Buffers::Specular, Buffers::Alpha});
@@ -477,7 +494,10 @@ namespace CS562
 
 	void GraphicsManager::RegisterLight(const std::weak_ptr<Light>& light)
 	{
-		impl->lights.push_back(light);
+		if (light.lock()->cast_shadow)
+			impl->shadowing_lights.push_back(light);
+		else
+			impl->lights.push_back(light);
 	}
 
 	void GraphicsManager::SetDrawmode(Drawmode mode)

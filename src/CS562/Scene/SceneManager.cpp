@@ -85,7 +85,7 @@ namespace CS562
 		std::uniform_real_distribution<float> pos_z(-80, 70);
 
 		std::uniform_real_distribution<float> intensity(0.1f, 1);
-		std::uniform_real_distribution<float> dist(15, 50);
+		std::uniform_real_distribution<float> dist(5, 15);
 
 		std::uniform_real_distribution<float> color(0, 1);
 

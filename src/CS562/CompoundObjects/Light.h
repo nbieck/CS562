@@ -15,6 +15,15 @@
 
 namespace CS562
 {
+	namespace LightType
+	{
+		enum type
+		{
+			Point = 0,
+			Spot
+		};
+	}
+
 	//simple pointlight
 	class Light
 	{
@@ -27,6 +36,11 @@ namespace CS562
 		float intensity;
 		float max_distance;
 
+		float inner_cos;
+		float outer_cos;
+
+		LightType::type light_type;
+		bool cast_shadow;
 	//private:
 
 		const Transformation& owner_world_trans_;

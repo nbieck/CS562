@@ -31,10 +31,6 @@ namespace CS562
 		
 		camera_ = std::make_shared<Camera>(cam_obj_->GetGlobalTrans(), 10.f, 800.f, glm::radians(50.f), (static_cast<float>(width) / static_cast<float>(height)));
 		cam_obj_->cam = camera_;
-		
-		auto light = std::make_shared<Light>(cam_obj_->GetGlobalTrans());
-		cam_obj_->light = light;
-		gfx_.curr_light = light;
 
 		gfx_.current_cam = camera_;
 	}
