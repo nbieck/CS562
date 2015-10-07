@@ -34,7 +34,7 @@ namespace CS562
 		//set any additional uniforms besides transformation before calling this
 		void Draw(const glm::mat4& view, const glm::mat4& projection);
 
-	private:
+	//private:
 		
 		void SetTransformationUniforms(const glm::mat4& view, const glm::mat4& projection);
 		const Transformation& owner_world_trans_;

@@ -10,7 +10,7 @@
 namespace CS562
 {
 	Light::Light(const Transformation& owner_trans)
-		: owner_world_trans_(owner_trans), light_type(LightType::Point)
+		: owner_world_trans_(owner_trans), light_type(LightType::Point), cast_shadow(false)
 	{}
 
 	void Light::SetUniforms(const std::shared_ptr<ShaderProgram>& prog)

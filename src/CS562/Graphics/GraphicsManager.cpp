@@ -30,6 +30,14 @@ namespace CS562
 		const glm::vec3 quad_verts[] =
 		{ {1, 1, 0}, {-1, 1, 0}, {-1, -1, 0}, 
 		  {1, 1, 0}, {-1, -1, 0}, {1, -1, 0} };
+
+		const int shadow_map_size = 1024;
+
+		const glm::mat4 bias_mat
+			(.5f, 0, 0, 0,
+				0, .5f, 0, 0,
+				0, 0, .5f, 0,
+				0.5f, 0.5f, 0.5f, 1);
 	}
 
 	struct GraphicsManager::PImpl
@@ -60,6 +68,8 @@ namespace CS562
 
 		std::unique_ptr<Framebuffer> shadow_buffer;
 		std::shared_ptr<Texture> shadow_map;
+		std::shared_ptr<Texture> shadow_map_depth;
+		std::shared_ptr<Texture> filtered_shadow_map;
 
 		struct LightSphereData
 		{
@@ -268,6 +278,17 @@ namespace CS562
 
 			light_sphere_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/light_marker.shader");
 			
+			shadow_map_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/shadow_pass.shader");
+
+			shadow_light_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/shadow_light.shader");
+
+			shadow_light_shader->SetUniform("Position", 1);
+			shadow_light_shader->SetUniform("Normal", 2);
+			shadow_light_shader->SetUniform("Diffuse", 3);
+			shadow_light_shader->SetUniform("Specular", 4);
+			shadow_light_shader->SetUniform("Shininess", 5);
+			shadow_light_shader->SetUniform("shadow_map", 6);
+
 			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 			std::vector<std::shared_ptr<Material>> mats;
 			ResourceLoader::LoadObjFile(geom, mats, "meshes/sphere.obj");
@@ -289,11 +310,37 @@ namespace CS562
 			}
 		}
 		
+		void InitShadowMap()
+		{
+			shadow_buffer = std::make_unique<Framebuffer>();
+			shadow_map = std::make_shared<Texture>();
+			filtered_shadow_map = std::make_shared<Texture>();
+			shadow_map_depth = std::make_shared<Texture>();
+			{
+				auto unbind = shadow_map->Bind(0);
+				shadow_map->AllocateSpace(shadow_map_size, shadow_map_size, TextureFormatInternal::R32F, 1);
+			}
+			{
+				auto unbind = shadow_map_depth->Bind(0);
+				shadow_map_depth->AllocateSpace(shadow_map_size, shadow_map_size, TextureFormatInternal::DEPTH24, 1);
+			}
+			{
+				auto unbind = shadow_buffer->Bind();
+				shadow_buffer->AttachTexture(Attachments::Color0, shadow_map);
+				shadow_buffer->AttachTexture(Attachments::Depth, shadow_map_depth);
+			}
+			{
+				auto unbind = filtered_shadow_map->Bind(0);
+				filtered_shadow_map->AllocateSpace(shadow_map_size, shadow_map_size, TextureFormatInternal::R32F, 1);
+			}
+		}
+
 		void GeometryPass()
 		{
 			gl::Enable(gl::DEPTH_TEST);
 
 			auto unbind = g_buffer->g_buff->Bind();
+			gl::ClearColor(0.f, 0.f, 0.f, 0.f);
 			gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
 			if (owner.current_cam)
@@ -331,9 +378,9 @@ namespace CS562
 				unsigned idx = 0;
 				{
 					auto unbind_buff = light_sphere_MVP_buffer->Bind(BufferTargets::Vertex);
-					if (light_sphere_MVP_buffer->GetSize() < lights.size())
+					if (light_sphere_MVP_buffer->GetSize() < lights.size() + shadowing_lights.size())
 					{
-						light_sphere_MVP_buffer->ResizeableStorage(static_cast<unsigned>(lights.size()));
+						light_sphere_MVP_buffer->ResizeableStorage(static_cast<unsigned>(lights.size() + shadowing_lights.size()));
 					}
 
 					auto * data = light_sphere_MVP_buffer->Map(MapModes::Write);
@@ -343,6 +390,21 @@ namespace CS562
 						if (it->expired())
 						{
 							it = lights.erase(it);
+							continue;
+						}
+
+						auto light = it->lock();
+						data[idx].MVP = light->owner_world_trans_.GetMatrix();
+						data[idx].color = light->color;
+
+						idx++;
+						it++;
+					}
+					for (auto it = shadowing_lights.begin(); it != shadowing_lights.end();)
+					{
+						if (it->expired())
+						{
+							it = shadowing_lights.erase(it);
 							continue;
 						}
 
@@ -411,20 +473,93 @@ namespace CS562
 
 		void ShadowLights(const glm::mat4& view, const glm::mat4& proj)
 		{
+			shadow_light_shader->SetUniform("ViewProj", proj * view);
 
+			//for each light:
+			for (auto l : shadowing_lights)
+			{
+				if (l.expired())
+					continue;
+
+				auto light = l.lock();
+
+				Camera l_cam(light->owner_world_trans_, 0.1f, light->max_distance, 2.f * glm::acos(light->outer_cos), 1.f);
+				glm::mat4 light_view =  l_cam.GetViewMatrix();
+				glm::mat4 light_proj = l_cam.GetProjectionMatrix();
+				//render shadow map
+
+				{
+					auto unbind = shadow_buffer->Bind();
+					gl::Viewport(0, 0, shadow_map_size, shadow_map_size);
+					gl::ClearColor(1.f, 1.f, 1.f, 1.f);
+					gl::Clear(gl::DEPTH_BUFFER_BIT | gl::COLOR_BUFFER_BIT);
+					gl::Disable(gl::BLEND);
+					auto shader_unbind = shadow_map_shader->Bind();
+					shadow_map_shader->SetUniform("VP", light_proj * light_view);
+					shadow_map_shader->SetUniform("near", 0.1f);
+					shadow_map_shader->SetUniform("far", light->max_distance);
+					shadow_map_shader->SetUniform("light_pos", light->owner_world_trans_.position);
+					shadow_map_shader->SetUniform("offset", 0.1f);
+
+					for (auto renderable : drawables)
+					{
+						if (renderable.expired())
+							continue;
+
+						auto render = renderable.lock();
+						
+						shadow_map_shader->SetUniform("M", render->owner_world_trans_.GetMatrix());
+
+						render->geometry->Draw();
+					}
+				}
+
+				//blur shadow map
+
+				gl::Viewport(0, 0, width, height);
+				gl::Enable(gl::BLEND);			
+				gl::DepthFunc(gl::GREATER);
+				gl::DepthMask(gl::FALSE_);
+				gl::CullFace(gl::FRONT);
+
+				shadow_light_shader->SetUniform("shadow_near", 0.1f);
+				shadow_light_shader->SetUniform("shadow_far", light->max_distance);
+				{
+					//render light
+					auto unbind = g_buffer->g_buff->Bind();
+					auto unbind_shadow_map = shadow_map->Bind(6);
+					auto unbind_shader = shadow_light_shader->Bind();
+
+					light->SetUniforms(shadow_light_shader);
+					Transformation l_t = light->owner_world_trans_;
+					l_t.scale = glm::vec3(light->max_distance);
+
+					shadow_light_shader->SetUniform("model_mat", l_t.GetMatrix());
+					shadow_light_shader->SetUniform("shadow_mat", bias_mat * light_proj * light_view);
+					glm::vec4 light_dir = light->owner_world_trans_.GetMatrix() * glm::vec4(0, 0, 1, 0);
+					shadow_light_shader->SetUniform("Light.direction", glm::normalize(glm::vec3(light_dir)));
+					
+					sphere->Draw();
+				}
+				gl::DepthMask(gl::TRUE_);
+				gl::DepthFunc(gl::LESS);
+				gl::CullFace(gl::BACK);
+
+			}
 		}
 
 		void LightingPass()
 		{
 			gl::Disable(gl::DEPTH_TEST);
 			light_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
+			shadow_light_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
 
-			auto unbind_buffer = g_buffer->g_buff->Bind();
-			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});
+			glm::mat4 view, proj;
+			view = owner.current_cam->GetViewMatrix();
+			proj = owner.current_cam->GetProjectionMatrix();
 			{
-				glm::mat4 view, proj;
-				view = owner.current_cam->GetViewMatrix();
-				proj = owner.current_cam->GetProjectionMatrix();
+				auto unbind_buffer = g_buffer->g_buff->Bind();
+				g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation});
 
 				gl::BlendFunc(gl::ONE, gl::ONE);
 				gl::Enable(gl::BLEND);
@@ -439,6 +574,10 @@ namespace CS562
 
 				NonShadowLights(view, proj);
 			}
+
+			ShadowLights(view, proj);
+
+			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
 				Buffers::Specular, Buffers::Alpha});
 
@@ -470,6 +609,7 @@ namespace CS562
 		impl->SetupFSQ();
 		impl->SetupShaders();
 		impl->SetupBuffers();
+		impl->InitShadowMap();
 	}
 
 	void GraphicsManager::Update()

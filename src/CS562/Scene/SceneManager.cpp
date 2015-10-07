@@ -39,6 +39,25 @@ namespace CS562
 		{
 			AddObject(glm::vec3(0), shader, g.first, mtl[g.second]);
 		}
+
+		Transformation t;
+		t.position = glm::vec3(0, 40, 0);
+		t.axis = glm::vec3(1, 0, 0);
+		t.angle = glm::radians(-45.f);
+
+		std::shared_ptr<Object> spot_light_obj = std::make_shared<Object>(t);
+		scene_root_->AddChild(spot_light_obj);
+		std::shared_ptr<Light> spot_light = std::make_shared<Light>(spot_light_obj->GetGlobalTrans());
+
+		spot_light->cast_shadow = true;
+		spot_light->color = glm::vec3(1);
+		spot_light->inner_cos = glm::cos(glm::radians(45.f));
+		spot_light->outer_cos = glm::cos(glm::radians(50.f));
+		spot_light->intensity = 10.f;
+		spot_light->max_distance = 100;
+		spot_light_obj->light = spot_light;
+
+		gfx_.RegisterLight(spot_light);
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
