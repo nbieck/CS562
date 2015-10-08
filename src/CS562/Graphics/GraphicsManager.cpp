@@ -19,6 +19,7 @@
 #include "../ImGui/imgui.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <list>
 #include <memory>
@@ -27,9 +28,12 @@ namespace CS562
 {
 	namespace
 	{
-		const glm::vec3 quad_verts[] =
-		{ {1, 1, 0}, {-1, 1, 0}, {-1, -1, 0}, 
-		  {1, 1, 0}, {-1, -1, 0}, {1, -1, 0} };
+		struct QuadVert { glm::vec3 pos; glm::vec2 uv; };
+
+		const QuadVert quad_verts[] =
+		{ {{1, 1, 0}, {1,1}}, {{-1, 1, 0},{0,1}}, {{-1, -1, 0},{0,0}},
+		{{1, 1, 0},{1,1}}, {{-1, -1, 0}, {0,0}}, {{1, -1, 0}, {1, 0} }
+	};
 
 		const int shadow_map_size = 1024;
 
@@ -49,6 +53,8 @@ namespace CS562
 		int width;
 		int height;
 
+		bool show_shadow_map;
+
 		HDC device_context;
 		HGLRC ogl_context;
 
@@ -56,7 +62,7 @@ namespace CS562
 
 		std::unique_ptr<VertexArray> FSQ;
 		std::shared_ptr<ShaderProgram> buffer_copy;
-		std::shared_ptr<Buffer<glm::vec3>> quad_buffer;
+		std::shared_ptr<Buffer<QuadVert>> quad_buffer;
 
 		std::shared_ptr<Geometry> sphere;
 		std::shared_ptr<ShaderProgram> light_sphere_shader;
@@ -65,6 +71,7 @@ namespace CS562
 		std::shared_ptr<ShaderProgram> light_shader;
 		std::shared_ptr<ShaderProgram> shadow_light_shader;
 		std::shared_ptr<ShaderProgram> shadow_map_shader;
+		std::shared_ptr<ShaderProgram> show_shadowmap_shader;
 
 		std::unique_ptr<Framebuffer> shadow_buffer;
 		std::shared_ptr<Texture> shadow_map;
@@ -94,7 +101,7 @@ namespace CS562
 		std::list<std::weak_ptr<Light>> shadowing_lights;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
-			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true)
 		{
 
 		}
@@ -239,16 +246,17 @@ namespace CS562
 
 		void SetupFSQ()
 		{
-			quad_buffer = std::make_shared<Buffer<glm::vec3>>();
+			quad_buffer = std::make_shared<Buffer<QuadVert>>();
 			{
 				auto unbind = quad_buffer->Bind(BufferTargets::Vertex);
-				quad_buffer->SetUpStorage(sizeof(quad_verts) / sizeof(glm::vec3), BufferCreateFlags::None, quad_verts);
+				quad_buffer->SetUpStorage(sizeof(quad_verts) / sizeof(QuadVert), BufferCreateFlags::None, quad_verts);
 			}
 
 			FSQ = std::make_unique<VertexArray>();
 			auto unbind = FSQ->Bind();
-			unsigned buffer_idx = FSQ->AddDataBuffer(quad_buffer, sizeof(glm::vec3));
+			unsigned buffer_idx = FSQ->AddDataBuffer(quad_buffer, sizeof(QuadVert));
 			FSQ->SetAttributeAssociation(0, buffer_idx, 3, DataTypes::Float, 0);
+			FSQ->SetAttributeAssociation(1, buffer_idx, 2, DataTypes::Float, sizeof(glm::vec3));
 		}
 		
 		void SetupShaders()
@@ -288,6 +296,10 @@ namespace CS562
 			shadow_light_shader->SetUniform("Specular", 4);
 			shadow_light_shader->SetUniform("Shininess", 5);
 			shadow_light_shader->SetUniform("shadow_map", 6);
+
+			show_shadowmap_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/render_shadowmap.shader");
+
+			show_shadowmap_shader->SetUniform("shadow_map", 1);
 
 			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 			std::vector<std::shared_ptr<Material>> mats;
@@ -596,6 +608,27 @@ namespace CS562
 
 			g_buffer->UnbindTextures();
 		}
+
+		void ShowShadowMap()
+		{
+			gl::Disable(gl::DEPTH_TEST);
+
+			const float margin = 0.1f;
+			const float dim = 0.5f;
+
+			const glm::mat4 proj = glm::ortho<float>(0.f, static_cast<float>(width), 0.f, static_cast<float>(height), -10, 10);
+			const glm::mat4 quad_model = glm::translate(glm::mat4(), glm::vec3(glm::vec2((margin + dim / 2.f) * height), 0.f)) * glm::scale(glm::mat4(), glm::vec3(height * dim / 2.f));
+
+			auto unbind_shader = show_shadowmap_shader->Bind();
+			show_shadowmap_shader->SetUniform("MVP", proj * quad_model);
+
+			auto unbind_tex = shadow_map->Bind(1);
+			auto unbind_vao = FSQ->Bind();
+
+			FSQ->Draw(PrimitiveTypes::Triangles, 6);
+
+			gl::Enable(gl::DEPTH_TEST);
+		}
 	};
 
 	GraphicsManager::~GraphicsManager() = default;
@@ -621,6 +654,9 @@ namespace CS562
 		impl->LightingPass();
 
 		impl->CopyBufferPass();
+
+		if (impl->show_shadow_map)
+			impl->ShowShadowMap();
 
 		ImGui::Render();
 
@@ -648,5 +684,10 @@ namespace CS562
 	void GraphicsManager::SetShownBuffer(int buffer)
 	{
 		impl->buffer_copy->SetUniform("BufferToShow", buffer);
+	}
+
+	void GraphicsManager::SetShowShadowMap(bool show)
+	{
+		impl->show_shadow_map = show;
 	}
 }

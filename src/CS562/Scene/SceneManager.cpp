@@ -53,7 +53,7 @@ namespace CS562
 		spot_light->color = glm::vec3(1);
 		spot_light->inner_cos = glm::cos(glm::radians(45.f));
 		spot_light->outer_cos = glm::cos(glm::radians(50.f));
-		spot_light->intensity = 10.f;
+		spot_light->intensity = 1.f;
 		spot_light->max_distance = 100;
 		spot_light_obj->light = spot_light;
 

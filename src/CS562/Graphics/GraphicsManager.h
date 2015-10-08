@@ -54,6 +54,8 @@ namespace CS562
 
 		void SetShownBuffer(int buffer);
 
+		void SetShowShadowMap(bool show);
+
 		std::shared_ptr<Camera> current_cam;
 
 	private:

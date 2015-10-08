@@ -34,6 +34,7 @@ namespace CS562
 
 		int show_buffer = DrawBuffers::LightAccum;
 		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
+		bool show_shadowmap = true;
 
 		int num_lights = 10;
 		int curr_lights = 10;
@@ -69,6 +70,10 @@ namespace CS562
 					for (; num_lights < curr_lights; --curr_lights)
 						scene.PopLight();
 				}
+
+				if (ImGui::Checkbox("Show Shadowmap", &show_shadowmap))
+					gfx.SetShowShadowMap(show_shadowmap);
+
 				gui.EndGuiWindow();
 			}
 
