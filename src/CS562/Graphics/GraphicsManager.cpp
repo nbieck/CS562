@@ -78,6 +78,8 @@ namespace CS562
 		std::shared_ptr<Texture> shadow_map_depth;
 		std::shared_ptr<Texture> filtered_shadow_map;
 
+		float exp_c;
+
 		struct LightSphereData
 		{
 			glm::mat4 MVP;
@@ -101,7 +103,7 @@ namespace CS562
 		std::list<std::weak_ptr<Light>> shadowing_lights;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
-			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f)
 		{
 
 		}
@@ -512,6 +514,7 @@ namespace CS562
 					shadow_map_shader->SetUniform("far", light->max_distance);
 					shadow_map_shader->SetUniform("light_pos", light->owner_world_trans_.position);
 					shadow_map_shader->SetUniform("offset", 0.1f);
+					shadow_map_shader->SetUniform("c", exp_c);
 
 					for (auto renderable : drawables)
 					{
@@ -536,6 +539,7 @@ namespace CS562
 
 				shadow_light_shader->SetUniform("shadow_near", 0.1f);
 				shadow_light_shader->SetUniform("shadow_far", light->max_distance);
+				shadow_light_shader->SetUniform("c", exp_c);
 				{
 					//render light
 					auto unbind = g_buffer->g_buff->Bind();
@@ -621,6 +625,7 @@ namespace CS562
 
 			auto unbind_shader = show_shadowmap_shader->Bind();
 			show_shadowmap_shader->SetUniform("MVP", proj * quad_model);
+			show_shadowmap_shader->SetUniform("c", exp_c);
 
 			auto unbind_tex = shadow_map->Bind(1);
 			auto unbind_vao = FSQ->Bind();
@@ -689,5 +694,10 @@ namespace CS562
 	void GraphicsManager::SetShowShadowMap(bool show)
 	{
 		impl->show_shadow_map = show;
+	}
+
+	void GraphicsManager::SetShadowC(float c)
+	{
+		impl->exp_c = c;
 	}
 }

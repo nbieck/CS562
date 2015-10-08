@@ -24,6 +24,8 @@ uniform mat4 shadow_mat;
 uniform float shadow_near;
 uniform float shadow_far;
 
+uniform float c;
+
 uniform vec3 CamPos;
 
 out vec3 OutColor;
@@ -64,10 +66,14 @@ float Shadow(vec3 P, float dist)
 
     float obj_depth = (dist - shadow_near) / (shadow_far - shadow_near);
 
-    if (obj_depth > map_depth)
-       return 0.0;
+    obj_depth = exp(-c * obj_depth);
 
-    return 1.0;
+    float shadow = obj_depth * map_depth;
+
+    if (shadow > 1.0)
+        return 1.0;
+
+    return shadow;
 }
 
 void main()

@@ -35,6 +35,7 @@ namespace CS562
 		int show_buffer = DrawBuffers::LightAccum;
 		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
 		bool show_shadowmap = true;
+		float c = 80.f;
 
 		int num_lights = 10;
 		int curr_lights = 10;
@@ -73,6 +74,9 @@ namespace CS562
 
 				if (ImGui::Checkbox("Show Shadowmap", &show_shadowmap))
 					gfx.SetShowShadowMap(show_shadowmap);
+
+				if (ImGui::SliderFloat("C (Exponential shadow)", &c, 0, 200))
+					gfx.SetShadowC(c);
 
 				gui.EndGuiWindow();
 			}

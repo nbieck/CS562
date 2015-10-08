@@ -4,7 +4,9 @@ in float vtx_depth;
 
 out float depth;
 
+uniform float c;
+
 void main()
 {
-    depth = vtx_depth;
+    depth = exp(c * vtx_depth);
 }
