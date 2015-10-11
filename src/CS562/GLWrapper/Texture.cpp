@@ -26,6 +26,7 @@ namespace CS562
 	{
 		//we assume that the texture has been bound and is in fact what we will operate on
 		gl::TexStorage2D(gl::TEXTURE_2D, mip_levels, static_cast<GLenum>(format), width, height);
+		format_ = format;
 	}
 
 	void Texture::SetParameter(TextureParameter param, float value)
@@ -46,6 +47,17 @@ namespace CS562
 		gl::BindTexture(gl::TEXTURE_2D, gl_object_);
 
 		last_bind_location_ = bind_location;
+		last_bound_as_tex_ = true;
+
+		return Unbinder<Texture>(*this);
+	}
+
+	Unbinder<Texture> Texture::BindImage(unsigned bind_location, ImageAccessMode::type access)
+	{
+		gl::BindImageTexture(bind_location, gl_object_, 0, gl::FALSE_, 0, access, static_cast<unsigned>(format_));
+
+		last_bind_location_ = bind_location;
+		last_bound_as_tex_ = false;
 
 		return Unbinder<Texture>(*this);
 	}
@@ -58,14 +70,22 @@ namespace CS562
 		gl::BindTexture(gl::TEXTURE_2D, gl_object_);
 
 		last_bind_location_ = bind_location;
+		last_bound_as_tex_ = true;
 	}
 
 	void Texture::Unbind()
 	{
-		if (ContextState::GetActiveTextureUnit() != last_bind_location_)
-			ContextState::SetActiveTextureUnit(last_bind_location_);
+		if (last_bound_as_tex_)
+		{
+			if (ContextState::GetActiveTextureUnit() != last_bind_location_)
+				ContextState::SetActiveTextureUnit(last_bind_location_);
 
-		gl::BindTexture(gl::TEXTURE_2D, 0);
+			gl::BindTexture(gl::TEXTURE_2D, 0);
+		}
+		else
+		{
+			//gl::BindImageTexture(last_bind_location_, 0, 0, gl::FALSE_, 0, gl::READ_ONLY, gl::RGB8);
+		}
 	}
 
 	void Texture::TransferData(int x_offset, int y_offset, unsigned width, unsigned height, 

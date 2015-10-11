@@ -24,6 +24,7 @@
 #include <list>
 #include <memory>
 
+
 namespace CS562
 {
 	namespace
@@ -36,6 +37,7 @@ namespace CS562
 	};
 
 		const int shadow_map_size = 1024;
+		const unsigned compute_group_size = 128;
 
 		const glm::mat4 bias_mat
 			(.5f, 0, 0, 0,
@@ -73,6 +75,9 @@ namespace CS562
 		std::shared_ptr<ShaderProgram> shadow_map_shader;
 		std::shared_ptr<ShaderProgram> show_shadowmap_shader;
 
+		std::shared_ptr<ShaderProgram> horizontal_blur;
+		std::shared_ptr<ShaderProgram> vertical_blur;
+
 		std::unique_ptr<Framebuffer> shadow_buffer;
 		std::shared_ptr<Texture> shadow_map;
 		std::shared_ptr<Texture> shadow_map_depth;
@@ -102,8 +107,11 @@ namespace CS562
 		std::list<std::weak_ptr<Light>> lights;
 		std::list<std::weak_ptr<Light>> shadowing_lights;
 
+		int shadow_blur_width;
+		std::unique_ptr<Buffer<float>> blur_weights;
+
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
-			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(50)
 		{
 
 		}
@@ -303,6 +311,10 @@ namespace CS562
 
 			show_shadowmap_shader->SetUniform("shadow_map", 1);
 
+			horizontal_blur = ResourceLoader::LoadShaderProgramFromFile("shaders/blur_horizontal.shader");
+
+			vertical_blur = ResourceLoader::LoadShaderProgramFromFile("shaders/blur_vertical.shader");
+
 			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 			std::vector<std::shared_ptr<Material>> mats;
 			ResourceLoader::LoadObjFile(geom, mats, "meshes/sphere.obj");
@@ -322,6 +334,12 @@ namespace CS562
 				auto unbind = light_data_buffer->Bind(BufferTargets::Vertex);
 				light_data_buffer->ResizeableStorage(1000);
 			}
+			blur_weights = std::make_unique<Buffer<float>>();
+			{
+				auto unbind = blur_weights->Bind(BufferTargets::Vertex);
+				blur_weights->SetUpStorage(2 * max_blur_width + 1, BufferCreateFlags::MapRead | BufferCreateFlags::MapWrite);
+			}
+			owner.SetShadowBlurWidth(shadow_blur_width);
 		}
 		
 		void InitShadowMap()
@@ -530,6 +548,34 @@ namespace CS562
 				}
 
 				//blur shadow map
+				{
+					auto unbind_buffer = blur_weights->Bind(BufferTargets::ShaderStorage, 0);
+					//horizontal blur
+					{
+						auto unbind_shader = horizontal_blur->Bind();
+						horizontal_blur->SetUniform("filter_width", shadow_blur_width);
+
+						auto unbind_src_tex = shadow_map->BindImage(0, ImageAccessMode::ReadOnly);
+						auto unbind_dest_tex = filtered_shadow_map->BindImage(1, ImageAccessMode::WriteOnly);
+
+						horizontal_blur->RunCompute(shadow_map_size / compute_group_size, shadow_map_size);
+
+						gl::MemoryBarrier(gl::SHADER_IMAGE_ACCESS_BARRIER_BIT);
+					}
+
+					//vertical blur
+					{
+						auto unbind_shader = vertical_blur->Bind();
+						vertical_blur->SetUniform("filter_width", shadow_blur_width);
+
+						auto unbind_src_tex = shadow_map->BindImage(1, ImageAccessMode::WriteOnly);
+						auto unbind_dest_tex = filtered_shadow_map->BindImage(0, ImageAccessMode::ReadOnly);
+
+						vertical_blur->RunCompute(shadow_map_size, shadow_map_size / compute_group_size);
+
+						gl::MemoryBarrier(gl::TEXTURE_FETCH_BARRIER_BIT | gl::TEXTURE_UPDATE_BARRIER_BIT);
+					}
+				}
 
 				gl::Viewport(0, 0, width, height);
 				gl::Enable(gl::BLEND);			
@@ -699,5 +745,29 @@ namespace CS562
 	void GraphicsManager::SetShadowC(float c)
 	{
 		impl->exp_c = c;
+	}
+
+	void GraphicsManager::SetShadowBlurWidth(int w)
+	{
+		if (w > max_blur_width)
+			return;
+
+		impl->shadow_blur_width = w;
+
+		auto unbind = impl->blur_weights->Bind(BufferTargets::Vertex);
+		float *weights = impl->blur_weights->Map(MapModes::Write);
+
+		float s = static_cast<float>(w) / 3.f;
+		float total = 0.f;
+		for (int i = 0; i < 2 * w + 1; ++i)
+		{
+			float weight = std::exp(-0.5f * ((i - w) / s) * ((i - w) / s));
+			total += weight;
+		}
+
+		for (int i = 0; i < 2 * w + 1; ++i)
+			weights[i] = std::exp(-0.5f * ((i - w) / s) * ((i - w) / s)) / total;
+
+		impl->blur_weights->Unmap();
 	}
 }

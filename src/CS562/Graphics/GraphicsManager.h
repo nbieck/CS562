@@ -58,6 +58,10 @@ namespace CS562
 
 		void SetShadowC(float c);
 
+		void SetShadowBlurWidth(int w);
+
+		static const int max_blur_width = 50;
+
 		std::shared_ptr<Camera> current_cam;
 
 	private:

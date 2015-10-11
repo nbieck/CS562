@@ -38,6 +38,8 @@ namespace CS562
 		Unbinder<ShaderProgram> Bind();
 		void Unbind();
 
+		void RunCompute(unsigned width = 1, unsigned height = 1, unsigned depth = 1);
+
 		//SetUniform
 		void SetUniform(const char* name, float v0);
 		void SetUniform(const char* name, float v0, float v1);

@@ -36,6 +36,7 @@ namespace CS562
 		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
 		bool show_shadowmap = true;
 		float c = 80.f;
+		int blur = 50;
 
 		int num_lights = 10;
 		int curr_lights = 10;
@@ -77,6 +78,9 @@ namespace CS562
 
 				if (ImGui::SliderFloat("C (Exponential shadow)", &c, 0, 200))
 					gfx.SetShadowC(c);
+
+				if (ImGui::SliderInt("Shadow Blur Radius", &blur, 0, gfx.max_blur_width))
+					gfx.SetShadowBlurWidth(blur);
 
 				gui.EndGuiWindow();
 			}

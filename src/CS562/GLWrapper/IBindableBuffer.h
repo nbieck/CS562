@@ -17,11 +17,12 @@ namespace CS562
 	{
 		enum BufferTargets
 		{
-			None		 = 0,
-			Vertex		 = 0x8892,
-			Index		 = 0x8893,
+			None = 0,
+			Vertex = 0x8892,
+			Index = 0x8893,
 			DrawIndirect = 0x8F3F,
 			ShaderStorage = 0x90D2,
+			Uniform = 0x8A11,
 		};
 	}
 

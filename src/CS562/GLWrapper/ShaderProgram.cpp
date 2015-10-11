@@ -84,6 +84,11 @@ namespace CS562
 		gl::UseProgram(0);
 	}
 
+	void ShaderProgram::RunCompute(unsigned width, unsigned height, unsigned depth)
+	{
+		gl::DispatchCompute(width, height, depth);
+	}
+
 	void ShaderProgram::SetUniform(const char* name, float v0)
 	{
 		gl::ProgramUniform1f(gl_object_, GetUniformLocation(name), v0);

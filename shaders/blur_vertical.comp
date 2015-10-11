@@ -1,0 +1,41 @@
+#version 440
+
+layout(local_size_x = 1, local_size_y = 128) in;
+
+const int max_width = 50;
+uniform int filter_width;
+
+layout(binding = 0, r32f) uniform restrict readonly image2D img_in;
+layout(binding = 1, r32f) uniform restrict writeonly image2D img_out;
+
+layout(std430, binding = 0) buffer FilterKernel 
+{
+    float weights[2 * max_width + 1]; 
+};
+
+shared float pixels[128 + 2 * max_width];
+
+void main()
+{
+    //get pixels from image to group local storage
+    ivec2 pixel_loc = ivec2(gl_GlobalInvocationID.xy);
+    int local_idx = int(gl_LocalInvocationID.y);
+
+    pixels[local_idx] = imageLoad(img_in, pixel_loc - ivec2(filter_width, 0).yx).r;
+    if (local_idx < 2 * filter_width)
+        pixels[128 + local_idx] = imageLoad(img_in, pixel_loc + ivec2(128 - filter_width, 0).yx).r;
+
+    //barrier
+    barrier();
+
+    vec4 result_color = vec4(0);
+
+    //perform blur
+    for (int i = 0; i <= 2 * filter_width; ++i)
+    {
+        result_color += weights[i] * pixels[local_idx + i];
+    }
+
+    imageStore(img_out, pixel_loc, result_color);
+}
+

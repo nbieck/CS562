@@ -64,6 +64,16 @@ namespace CS562
 		const int Repeat = 0x2901;
 	}
 
+	namespace ImageAccessMode
+	{
+		enum type
+		{
+			ReadOnly = 0x88B8,
+			WriteOnly = 0x88B9,
+			ReadWrite = 0x88BA
+		};
+	}
+
 	// This manages the GPU-side texture resource.
 	class Texture
 	{
@@ -83,6 +93,7 @@ namespace CS562
 
 		//Binding - Unbinding
 		Unbinder<Texture> Bind(unsigned bind_location);
+		Unbinder<Texture> BindImage(unsigned bind_location, ImageAccessMode::type access);
 		void Bind_NoUnbind(unsigned bind_location);
 		void Unbind();
 
@@ -99,7 +110,10 @@ namespace CS562
 
 		unsigned gl_object_;
 
+		TextureFormatInternal format_;
+
 		unsigned last_bind_location_;
+		bool last_bound_as_tex_;
 
 	};
 }

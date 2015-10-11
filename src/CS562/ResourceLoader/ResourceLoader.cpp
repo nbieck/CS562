@@ -98,6 +98,9 @@ namespace CS562
 			case 'g':
 				shader_type = ShaderType::Geometry;
 				break;
+			case 'c':
+				shader_type = ShaderType::Compute;
+				break;
 			default:
 				continue;
 			}
