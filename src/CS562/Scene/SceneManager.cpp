@@ -45,9 +45,9 @@ namespace CS562
 		t.axis = glm::vec3(1, 0, 0);
 		t.angle = glm::radians(-45.f);
 
-		std::shared_ptr<Object> spot_light_obj = std::make_shared<Object>(t);
-		scene_root_->AddChild(spot_light_obj);
-		std::shared_ptr<Light> spot_light = std::make_shared<Light>(spot_light_obj->GetGlobalTrans());
+		spot_light_ =  std::make_shared<Object>(t);
+		scene_root_->AddChild(spot_light_);
+		std::shared_ptr<Light> spot_light = std::make_shared<Light>(spot_light_->GetGlobalTrans());
 
 		spot_light->cast_shadow = true;
 		spot_light->color = glm::vec3(1);
@@ -55,7 +55,7 @@ namespace CS562
 		spot_light->outer_cos = glm::cos(glm::radians(50.f));
 		spot_light->intensity = 1.f;
 		spot_light->max_distance = 100;
-		spot_light_obj->light = spot_light;
+		spot_light_->light = spot_light;
 
 		gfx_.RegisterLight(spot_light);
 	}
@@ -84,6 +84,17 @@ namespace CS562
 
 	void SceneManager::Update()
 	{
+		static float t = 0.0f;
+		if (rotate_light_)
+		{
+			t += static_cast<float>(time_.dt());
+
+			glm::vec3 target(30 * cos(t), 10, 30 * sin(t));
+
+			auto tr = spot_light_->GetLocalTrans();
+			tr.LookAt(target);
+			spot_light_->SetLocalTrans(tr);
+		}
 	}
 
 	std::vector<std::shared_ptr<Object>> SceneManager::GetObjectList()
@@ -133,6 +144,11 @@ namespace CS562
 
 			scene_root_->RemoveChild(obj);
 		}
+	}
+
+	void SceneManager::ToggleRotate()
+	{
+		rotate_light_ = !rotate_light_;
 	}
 
 	void SceneManager::CompObjListRec(std::shared_ptr<Object> node, std::vector<std::shared_ptr<Object>>& list)

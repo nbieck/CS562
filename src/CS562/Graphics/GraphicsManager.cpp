@@ -364,6 +364,7 @@ namespace CS562
 			{
 				auto unbind = filtered_shadow_map->Bind(0);
 				filtered_shadow_map->AllocateSpace(shadow_map_size, shadow_map_size, TextureFormatInternal::R32F, 1);
+				filtered_shadow_map->SetParameter(TextureParameter::MagFilter, TextureParamValue::FilterLinear);
 			}
 		}
 
@@ -531,7 +532,7 @@ namespace CS562
 					shadow_map_shader->SetUniform("near", 0.1f);
 					shadow_map_shader->SetUniform("far", light->max_distance);
 					shadow_map_shader->SetUniform("light_pos", light->owner_world_trans_.position);
-					shadow_map_shader->SetUniform("offset", 0.1f);
+					shadow_map_shader->SetUniform("offset", 0.f);
 					shadow_map_shader->SetUniform("c", exp_c);
 
 					for (auto renderable : drawables)

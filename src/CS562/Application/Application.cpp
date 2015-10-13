@@ -76,11 +76,15 @@ namespace CS562
 				if (ImGui::Checkbox("Show Shadowmap", &show_shadowmap))
 					gfx.SetShowShadowMap(show_shadowmap);
 
-				if (ImGui::SliderFloat("C (Exponential shadow)", &c, 0, 200))
+				if (ImGui::SliderFloat("C (Exponential shadow)", &c, 1, 150))
 					gfx.SetShadowC(c);
 
-				if (ImGui::SliderInt("Shadow Blur Radius", &blur, 0, gfx.max_blur_width))
+				if (ImGui::SliderInt("Shadow Blur Radius", &blur, 1, gfx.max_blur_width))
 					gfx.SetShadowBlurWidth(blur);
+
+
+				if (ImGui::Button("Start/Stop rotating light"))
+					scene.ToggleRotate();
 
 				gui.EndGuiWindow();
 			}
