@@ -17,5 +17,5 @@ void main()
     vec4 world_pos = M * vec4(m_position, 1);
     gl_Position = VP * world_pos;
 
-    vtx_depth = (length(light_pos - world_pos.xyz) + offset - near) / (far - near);
+    vtx_depth = (gl_Position.w + offset - near) / (far - near);
 }

@@ -64,7 +64,7 @@ float Shadow(vec3 P, float dist)
     vec4 light_proj_P = shadow_mat * vec4(P, 1);
     float map_depth = textureProj(shadow_map, light_proj_P.xyw).r;
 
-    float obj_depth = (dist - shadow_near) / (shadow_far - shadow_near);
+    float obj_depth = (light_proj_P.w - shadow_near) / (shadow_far - shadow_near);
 
     obj_depth = exp(-c * obj_depth);
 
