@@ -1,5 +1,7 @@
 #version 440
 
+const float PI = 3.14159265359;
+
 uniform sampler2D Position;
 uniform sampler2D Normal;
 uniform sampler2D Diffuse;
@@ -26,14 +28,28 @@ out vec3 OutColor;
 
 flat in int instance_ID;
 
-vec3 CalcDiffuse(vec3 L, vec3 N, vec3 diff_color)
+float pos_dot(vec3 a, vec3 b)
 {
-    return max(dot(L, N), 0) * diff_color * pow(Light[instance_ID].color, vec3(2.2)) * Light[instance_ID].intensity;
+    return max(dot(a,b),0);
 }
 
-vec3 CalcSpecular(vec3 H, vec3 N, vec3 spec_color, float shininess)
+float D(vec3 H, vec3 N, float alpha)
 {
-    return pow(max(dot(H, N), 0), shininess) * pow(Light[instance_ID].color, vec3(2.2)) * spec_color * Light[instance_ID].intensity;
+    return (alpha + 2)/(2 * PI) * pow(pos_dot(N, H), alpha);
+}
+
+vec3 F(vec3 K_S, vec3 L, vec3 H)
+{
+    return K_S + (1 - K_S) * pow(1 - pos_dot(L, H), 5);
+}
+
+vec3 BRDF(vec3 K_S, vec3 K_D, float alpha, vec3 L, vec3 V, vec3 H, vec3 N)
+{
+    vec3 diff = K_D / PI;
+    float L_dot_H = pos_dot(L, H);
+    vec3 spec = D(H, N, alpha) * F(K_S, L, H) / (4 * L_dot_H * L_dot_H);
+
+    return diff + spec;
 }
 
 float CalcAttenuation(float distance)
@@ -54,18 +70,22 @@ void main()
         discard;
 
     vec3 L = normalize(Light[instance_ID].position - Pos);
+    vec3 V = normalize(CamPos - Pos);
+    vec3 H = normalize(V + L);
+
+    if (pos_dot(L, H) == 0)
+        discard;
+
     vec3 N = normalize(texelFetch(Normal, pixel_pos, 0).xyz);
     
     vec3 DiffColor = texelFetch(Diffuse, pixel_pos, 0).xyz;
     vec3 SpecColor = texelFetch(Specular, pixel_pos, 0).xyz;
     float Shine = texelFetch(Shininess, pixel_pos, 0).x;
 
-    vec3 V = normalize(CamPos - Pos);
-    vec3 H = normalize(V + L);
-
     float attenuation = CalcAttenuation(dist);
 
-    OutColor = CalcDiffuse(L, N, DiffColor) * attenuation;
-    OutColor += CalcSpecular(V, N, SpecColor, Shine) * attenuation;
+    vec3 L_i = attenuation * Light[instance_ID].color * Light[instance_ID].intensity;
+    
+    OutColor = L_i * pos_dot(N, L) * BRDF(SpecColor, DiffColor, Shine, L, V, H, N);
         
 }
