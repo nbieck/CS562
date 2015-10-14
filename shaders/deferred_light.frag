@@ -28,12 +28,12 @@ flat in int instance_ID;
 
 vec3 CalcDiffuse(vec3 L, vec3 N, vec3 diff_color)
 {
-    return max(dot(L, N), 0) * diff_color * Light[instance_ID].color * Light[instance_ID].intensity;
+    return max(dot(L, N), 0) * diff_color * pow(Light[instance_ID].color, vec3(2.2)) * Light[instance_ID].intensity;
 }
 
 vec3 CalcSpecular(vec3 H, vec3 N, vec3 spec_color, float shininess)
 {
-    return pow(max(dot(H, N), 0), shininess) * Light[instance_ID].color * spec_color * Light[instance_ID].intensity;
+    return pow(max(dot(H, N), 0), shininess) * pow(Light[instance_ID].color, vec3(2.2)) * spec_color * Light[instance_ID].intensity;
 }
 
 float CalcAttenuation(float distance)

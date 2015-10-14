@@ -20,7 +20,7 @@ namespace CS562
 
 		{
 			auto unbind = attachments[Buffers::LightAccumulation]->Bind(1);
-			attachments[Buffers::LightAccumulation]->AllocateSpace(width, height, TextureFormatInternal::RGB8, 1);
+			attachments[Buffers::LightAccumulation]->AllocateSpace(width, height, TextureFormatInternal::RGB16, 1);
 		}
 		{
 			auto unbind = attachments[Buffers::Position]->Bind(1);
@@ -32,11 +32,11 @@ namespace CS562
 		}
 		{
 			auto unbind = attachments[Buffers::Diffuse]->Bind(1);
-			attachments[Buffers::Diffuse]->AllocateSpace(width, height, TextureFormatInternal::RGB8, 1);
+			attachments[Buffers::Diffuse]->AllocateSpace(width, height, TextureFormatInternal::RGB16, 1);
 		}
 		{
 			auto unbind = attachments[Buffers::Specular]->Bind(1);
-			attachments[Buffers::Specular]->AllocateSpace(width, height, TextureFormatInternal::RGB8, 1);
+			attachments[Buffers::Specular]->AllocateSpace(width, height, TextureFormatInternal::RGB16, 1);
 		}
 		{
 			auto unbind = attachments[Buffers::Alpha]->Bind(1);

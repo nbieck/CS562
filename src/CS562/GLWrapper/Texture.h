@@ -18,6 +18,11 @@ namespace CS562
 		RGB8 = 0x8051,
 		RGBA8 = 0x8058,
 
+		R16 = 0x822A,
+		RG16 = 0x822C,
+		RGB16 = 0x8054,
+		RGBA16 = 0x805B,
+
 		R32F = 0x822E,
 		RG32F = 0x8230,
 		RGB32F = 0x8815,

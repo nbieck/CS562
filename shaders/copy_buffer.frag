@@ -16,7 +16,7 @@ void main()
     ivec2 texel_coord = ivec2(gl_FragCoord.xy);
 
     if (BufferToShow == 0)
-        outColor = texelFetch(LightAccumulation, texel_coord, 0);
+        outColor = pow(texelFetch(LightAccumulation, texel_coord, 0), vec4(1.0 / 2.2));
     else if (BufferToShow == 1)
         outColor = abs(texelFetch(Position, texel_coord, 0) / vec4(200, 140, 115, 1));
     else if (BufferToShow == 2)

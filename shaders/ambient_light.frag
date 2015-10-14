@@ -8,5 +8,5 @@ out vec3 LightAccumulation;
 
 void main()
 {
-    LightAccumulation = AmbientLight * texelFetch(Diffuse, ivec2(gl_FragCoord.xy), 0).rgb;
+    LightAccumulation = pow(AmbientLight, vec3(2.2)) * texelFetch(Diffuse, ivec2(gl_FragCoord.xy), 0).rgb;
 }

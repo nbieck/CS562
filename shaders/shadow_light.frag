@@ -32,12 +32,12 @@ out vec3 OutColor;
 
 vec3 CalcDiffuse(vec3 L, vec3 N, vec3 diff_color)
 {
-    return max(dot(L, N), 0) * diff_color * Light.color * Light.intensity;
+    return max(dot(L, N), 0) * diff_color * pow(Light.color, vec3(2.2)) * Light.intensity;
 }
 
 vec3 CalcSpecular(vec3 H, vec3 N, vec3 spec_color, float shininess)
 {
-    return pow(max(dot(H, N), 0), shininess) * Light.color * spec_color * Light.intensity;
+    return pow(max(dot(H, N), 0), shininess) * pow(Light.color, vec3(2.2)) * spec_color * Light.intensity;
 }
 
 float CalcAttenuation(float distance)

@@ -21,7 +21,7 @@ void main()
     LightAccumulation = vec3(0);
     Position = w_position;
     Normal = normalize(w_normal);
-    Diffuse = texture(DiffuseTex, uv).rgb;
-    Specular = texture(SpecularTex, uv).rgb;
+    Diffuse = pow(texture(DiffuseTex, uv).rgb, vec3(2.2));
+    Specular = pow(texture(SpecularTex, uv).rgb, vec3(2.2));
     Shininess = SpecularCoefficient;
 }
