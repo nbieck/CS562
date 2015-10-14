@@ -43,6 +43,8 @@ namespace CS562
 		std::shared_ptr<Object> AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material = nullptr);
 		void CompObjListRec(std::shared_ptr<Object> node, std::vector<std::shared_ptr<Object>>& list);
 
+		void AddSpotLight(const glm::vec3& pos, const glm::vec3& target, float inner_angle, float outer_angle, const glm::vec3& color, float intensity, float max_dist);
+
 		std::vector<std::shared_ptr<Object>> lights_;
 
 		std::shared_ptr<Object> spot_light_;

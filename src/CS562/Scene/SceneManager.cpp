@@ -40,24 +40,9 @@ namespace CS562
 			AddObject(glm::vec3(0), shader, g.first, mtl[g.second]);
 		}
 
-		Transformation t;
-		t.position = glm::vec3(0, 40, 0);
-		t.axis = glm::vec3(1, 0, 0);
-		t.angle = glm::radians(-45.f);
-
-		spot_light_ =  std::make_shared<Object>(t);
-		scene_root_->AddChild(spot_light_);
-		std::shared_ptr<Light> spot_light = std::make_shared<Light>(spot_light_->GetGlobalTrans());
-
-		spot_light->cast_shadow = true;
-		spot_light->color = glm::vec3(1);
-		spot_light->inner_cos = glm::cos(glm::radians(45.f));
-		spot_light->outer_cos = glm::cos(glm::radians(50.f));
-		spot_light->intensity = 1.f;
-		spot_light->max_distance = 100;
-		spot_light_->light = spot_light;
-
-		gfx_.RegisterLight(spot_light);
+		AddSpotLight(glm::vec3(75, 35, 0), glm::vec3(90, 0, 20), 30, 50, glm::vec3(1, 0.9, 0.7), 2, 100);
+		AddSpotLight(glm::vec3(75, 20, 40), glm::vec3(85, 0, 20), 30, 40, glm::vec3(0.75, 0.9, 1), 3, 70);
+		AddSpotLight(glm::vec3(125, 25, -30), glm::vec3(105, 0, 20), 20, 60, glm::vec3(0.8, 0.6, 1), 1, 150);
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
@@ -84,17 +69,7 @@ namespace CS562
 
 	void SceneManager::Update()
 	{
-		static float t = 0.0f;
-		if (rotate_light_)
-		{
-			t += static_cast<float>(time_.dt());
-
-			glm::vec3 target(30 * cos(t), 10, 30 * sin(t));
-
-			auto tr = spot_light_->GetLocalTrans();
-			tr.LookAt(target);
-			spot_light_->SetLocalTrans(tr);
-		}
+		
 	}
 
 	std::vector<std::shared_ptr<Object>> SceneManager::GetObjectList()
@@ -159,5 +134,25 @@ namespace CS562
 		{
 			CompObjListRec(child, list);
 		}
+	}
+
+	void SceneManager::AddSpotLight(const glm::vec3 & pos, const glm::vec3 & target, float inner_angle, float outer_angle, const glm::vec3 & color, float intensity, float max_dist)
+	{
+		Transformation t;
+		t.position = pos;
+		t.LookAt(target);
+		auto spot_light_ =  std::make_shared<Object>(t);
+		scene_root_->AddChild(spot_light_);
+		std::shared_ptr<Light> spot_light = std::make_shared<Light>(spot_light_->GetGlobalTrans());
+
+		spot_light->cast_shadow = true;
+		spot_light->color = color;
+		spot_light->inner_cos = glm::cos(glm::radians(inner_angle));
+		spot_light->outer_cos = glm::cos(glm::radians(outer_angle));
+		spot_light->intensity = intensity;
+		spot_light->max_distance = max_dist;
+		spot_light_->light = spot_light;
+
+		gfx_.RegisterLight(spot_light);
 	}
 }
