@@ -111,7 +111,7 @@ namespace CS562
 		std::unique_ptr<Buffer<float>> blur_weights;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
-			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(50)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(5)
 		{
 
 		}

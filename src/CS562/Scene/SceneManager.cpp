@@ -41,7 +41,7 @@ namespace CS562
 		}
 
 		AddSpotLight(glm::vec3(75, 35, 0), glm::vec3(90, 0, 20), 30, 50, glm::vec3(1, 0.9, 0.7), 2, 100);
-		AddSpotLight(glm::vec3(75, 20, 40), glm::vec3(85, 0, 20), 30, 40, glm::vec3(0.75, 0.9, 1), 3, 70);
+		AddSpotLight(glm::vec3(75, 20, 40), glm::vec3(85, 0, 20), 30, 40, glm::vec3(0.75, 0.9, 1), 300, 70);
 		AddSpotLight(glm::vec3(125, 25, -30), glm::vec3(105, 0, 20), 20, 60, glm::vec3(0.8, 0.6, 1), 1, 150);
 	}
 
