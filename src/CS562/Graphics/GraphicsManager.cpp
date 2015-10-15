@@ -284,7 +284,7 @@ namespace CS562
 			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
 
 			ambient_shader->SetUniform("Diffuse", 3);
-			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.2f));
+			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.6f));
 
 			light_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/deferred_light.shader");
 
@@ -706,9 +706,6 @@ namespace CS562
 		impl->LightingPass();
 
 		impl->CopyBufferPass();
-
-		if (impl->show_shadow_map)
-			impl->ShowShadowMap();
 
 		ImGui::Render();
 

@@ -17,7 +17,9 @@ namespace CS562
 	public:
 
 		std::shared_ptr<Texture> diffuse_tex;
+		glm::vec3 k_d;
 		std::shared_ptr<Texture> specular_tex;
+		glm::vec3 k_s;
 		float shininess;
 
 		void SetUniforms(std::shared_ptr<ShaderProgram> shader);

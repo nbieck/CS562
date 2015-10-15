@@ -34,15 +34,6 @@ namespace CS562
 
 		int show_buffer = DrawBuffers::LightAccum;
 		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
-		bool show_shadowmap = true;
-		float c = 80.f;
-		int blur = 50;
-
-		int num_lights = 10;
-		int curr_lights = 10;
-
-		for (unsigned i = 0; i < 10; ++i)
-			scene.PushLight();
 
 		while (running_)
 		{
@@ -64,27 +55,6 @@ namespace CS562
 
 				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 6))
 					gfx.SetShownBuffer(show_buffer);
-
-				if (ImGui::SliderInt("NumLights", &num_lights, 0, 10000))
-				{
-					for (; num_lights > curr_lights; ++curr_lights)
-						scene.PushLight();
-					for (; num_lights < curr_lights; --curr_lights)
-						scene.PopLight();
-				}
-
-				if (ImGui::Checkbox("Show Shadowmap", &show_shadowmap))
-					gfx.SetShowShadowMap(show_shadowmap);
-
-				if (ImGui::SliderFloat("C (Exponential shadow)", &c, 1, 150))
-					gfx.SetShadowC(c);
-
-				if (ImGui::SliderInt("Shadow Blur Radius", &blur, 1, gfx.max_blur_width))
-					gfx.SetShadowBlurWidth(blur);
-
-
-				if (ImGui::Button("Start/Stop rotating light"))
-					scene.ToggleRotate();
 
 				gui.EndGuiWindow();
 			}

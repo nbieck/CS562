@@ -146,11 +146,24 @@ namespace CS562
 				const std::vector<float>& normal = shape.mesh.normals;
 				const std::vector<float>& uv = shape.mesh.texcoords;
 
-				for (std::size_t i = 0; i < num_verts; ++i)
+				if (!uv.empty())
 				{
-					vertices.push_back({ glm::vec3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]), 
-						glm::vec3(normal[i * 3], normal[i * 3 + 1], normal[i * 3 + 2]),
-						glm::vec2(uv[i * 2], uv[i * 2 + 1]) });
+					for (std::size_t i = 0; i < num_verts; ++i)
+					{
+						vertices.push_back({ glm::vec3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]),
+							glm::vec3(normal[i * 3], normal[i * 3 + 1], normal[i * 3 + 2]),
+							glm::vec2(uv[i * 2], uv[i * 2 + 1]) });
+					}
+				}
+				else
+				{
+					for (std::size_t i = 0; i < num_verts; ++i)
+					{
+						vertices.push_back({ glm::vec3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]),
+							glm::vec3(normal[i * 3], normal[i * 3 + 1], normal[i * 3 + 2]),
+							glm::vec2(0) });
+					}
+	
 				}
 
 				geom.push_back(std::make_pair(std::make_shared<Geometry>(vertices, shape.mesh.indices, PrimitiveTypes::Triangles), shape.mesh.material_ids[0]));

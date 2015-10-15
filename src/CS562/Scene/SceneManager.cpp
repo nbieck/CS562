@@ -33,23 +33,24 @@ namespace CS562
 		std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 		std::vector<std::shared_ptr<Material>> mtl;
 
-		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
+		ResourceLoader::LoadObjFile(geom, mtl, "meshes/dragon.obj");
+
+		std::shared_ptr<Material> mat = std::make_shared<Material>();
+		mat->k_d = glm::vec3(0.9, 1, 0.8);
+		mat->k_s = glm::vec3(0.05, 0.05, 0.05);
+		mat->shininess = 50.f;
 
 		for (auto g : geom)
 		{
-			AddObject(glm::vec3(0), shader, g.first, mtl[g.second]);
+			AddObject(glm::vec3(0), shader, g.first, mat);
 		}
-
-		AddSpotLight(glm::vec3(75, 35, 0), glm::vec3(90, 0, 20), 30, 50, glm::vec3(1, 0.9, 0.7), 2, 100);
-		AddSpotLight(glm::vec3(75, 20, 40), glm::vec3(85, 0, 20), 30, 40, glm::vec3(0.75, 0.9, 1), 300, 70);
-		AddSpotLight(glm::vec3(125, 25, -30), glm::vec3(105, 0, 20), 20, 60, glm::vec3(0.8, 0.6, 1), 1, 150);
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
 	{
 		Transformation t;
 		t.position = position;
-		t.scale = glm::vec3(0.1f, 0.1f, 0.1f);
+		t.scale = glm::vec3(10, 10, 10);
 
 		std::shared_ptr<Object> drawable_obj = std::make_shared<Object>(t);
 		scene_root_->AddChild(drawable_obj);
