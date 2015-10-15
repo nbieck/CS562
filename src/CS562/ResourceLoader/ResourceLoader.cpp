@@ -224,7 +224,7 @@ namespace CS562
 
 		tex->AllocateSpace(x, y, format_internal, ComputeMipLevels(x, y));
 
-		InvertImageVertically(x, y, components, img_data);
+		InvertImageVertically<unsigned char>(x, y, components, img_data);
 
 		tex->TransferData(0, 0, x, y, format, TextureDataType::UnsignedByte, img_data);
 
@@ -237,24 +237,35 @@ namespace CS562
 		return tex;
 	}
 
+	std::shared_ptr<Texture> ResourceLoader::LoadHDRTexFromFile(const std::string & filename)
+	{
+		auto pre_loaded = loaded_textures_.find(filename);
+		if (pre_loaded != loaded_textures_.end() && !pre_loaded->second.expired())
+			return pre_loaded->second.lock();
+
+		int x, y, channels;
+		float *pixel_data = stbi_loadf(filename.c_str(), &x, &y, &channels, STBI_rgb);
+
+		if (!pixel_data)
+			return nullptr;
+
+		std::shared_ptr<Texture> tex = std::make_shared<Texture>();
+
+		auto unbind = tex->Bind(1);
+
+		tex->AllocateSpace(x, y, TextureFormatInternal::RGB32F, ComputeMipLevels(x, y));
+
+		InvertImageVertically<float>(x, y, 3, pixel_data);
+
+		tex->TransferData(0, 0, x, y, TextureFormat::RGB, TextureDataType::Float, pixel_data);
+		tex->GenerateMipMaps();
+
+		return tex;
+	}
+
 	int ResourceLoader::ComputeMipLevels(int width, int height)
 	{
 		return static_cast<int>(std::floor(std::log2(MAX(width, height))) + 1);
 	}
-	void ResourceLoader::InvertImageVertically(int width, int height, int channels, unsigned char * const image)
-	{
-		for (int j = 0; j * 2 < height; ++j)
-		{
-			int index1 = j * width * channels;
-			int index2 = (height - 1 - j) * width * channels;
-			for (int i = width * channels; i > 0; --i)
-			{
-				unsigned char temp = image[index1];
-				image[index1] = image[index2];
-				image[index2] = temp;
-				++index1;
-				++index2;
-			}
-		}
-	}
+
 }

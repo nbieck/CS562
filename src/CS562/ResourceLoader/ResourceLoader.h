@@ -31,13 +31,31 @@ namespace CS562
 
 		static std::shared_ptr<Texture> LoadTextureFromFile(const std::string& filename);
 
+		static std::shared_ptr<Texture> LoadHDRTexFromFile(const std::string& filename);
+
 	private:
 
 		static std::map<std::string, std::weak_ptr<Texture>> loaded_textures_;
 
 		static int ComputeMipLevels(int width, int height);
 
-		static void InvertImageVertically(int width, int height, int channels, unsigned char *const image);
+		template <typename T>
+		static void InvertImageVertically(int width, int height, int channels, T * const image)
+		{
+			for (int j = 0; j * 2 < height; ++j)
+			{
+				int index1 = j * width * channels;
+				int index2 = (height - 1 - j) * width * channels;
+				for (int i = width * channels; i > 0; --i)
+				{
+					T temp = image[index1];
+					image[index1] = image[index2];
+					image[index2] = temp;
+					++index1;
+					++index2;
+				}
+			}
+		}
 
 	};
 }

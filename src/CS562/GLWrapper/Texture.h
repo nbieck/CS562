@@ -45,6 +45,7 @@ namespace CS562
 	enum class TextureDataType
 	{
 		UnsignedByte = 0x1401,
+		Float = 0x1406,
 	};
 
 	enum class TextureParameter

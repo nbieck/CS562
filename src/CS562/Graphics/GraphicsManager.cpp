@@ -69,6 +69,10 @@ namespace CS562
 		std::shared_ptr<Geometry> sphere;
 		std::shared_ptr<ShaderProgram> light_sphere_shader;
 
+		std::shared_ptr<Geometry> sky_sphere;
+		std::shared_ptr<Texture> sky_sphere_img;
+		std::shared_ptr<ShaderProgram> sky_sphere_shader;
+
 		std::shared_ptr<ShaderProgram> ambient_shader;
 		std::shared_ptr<ShaderProgram> light_shader;
 		std::shared_ptr<ShaderProgram> shadow_light_shader;
@@ -315,6 +319,10 @@ namespace CS562
 
 			vertical_blur = ResourceLoader::LoadShaderProgramFromFile("shaders/blur_vertical.shader");
 
+			sky_sphere_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/sky_sphere.shader");
+
+			sky_sphere_shader->SetUniform("sky_tex", 1);
+
 			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 			std::vector<std::shared_ptr<Material>> mats;
 			ResourceLoader::LoadObjFile(geom, mats, "meshes/sphere.obj");
@@ -342,6 +350,23 @@ namespace CS562
 			owner.SetShadowBlurWidth(shadow_blur_width);
 		}
 		
+		void SetupSkysphere()
+		{
+			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
+			std::vector<std::shared_ptr<Material>> mtl;
+
+			ResourceLoader::LoadObjFile(geom, mtl, "meshes/skysphere.obj");
+
+			sky_sphere = geom.front().first;
+
+			sky_sphere_img = ResourceLoader::LoadHDRTexFromFile("skyboxes/tokyo.hdr");
+			{
+				auto unbind = sky_sphere_img->Bind(1);
+				sky_sphere_img->SetParameter(TextureParameter::WrapS, TextureParamValue::Repeat);
+				sky_sphere_img->SetParameter(TextureParameter::WrapT, TextureParamValue::Repeat);
+			}
+		}
+
 		void InitShadowMap()
 		{
 			shadow_buffer = std::make_unique<Framebuffer>();
@@ -373,6 +398,8 @@ namespace CS562
 			gl::Enable(gl::DEPTH_TEST);
 
 			auto unbind = g_buffer->g_buff->Bind();
+			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
+				Buffers::Specular, Buffers::Alpha});
 			gl::ClearColor(0.f, 0.f, 0.f, 0.f);
 			gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
@@ -681,6 +708,31 @@ namespace CS562
 
 			gl::Enable(gl::DEPTH_TEST);
 		}
+
+		void RenderSkysphere()
+		{
+			gl::Enable(gl::DEPTH_TEST);
+			gl::DepthFunc(gl::LEQUAL);
+			
+			glm::mat4 view, proj;
+			view = owner.current_cam->GetViewMatrix();
+			proj = owner.current_cam->GetProjectionMatrix();
+
+			view = glm::mat4(glm::mat3(view));
+
+			{
+				auto unbind_fbo = g_buffer->g_buff->Bind();
+				g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation });
+				sky_sphere_shader->SetUniform("MVP", proj * view);
+				auto unbind_tex = sky_sphere_img->Bind(1);
+				auto unbind_shader = sky_sphere_shader->Bind();
+
+				sky_sphere->Draw();
+			}
+
+			gl::DepthFunc(gl::LESS);
+
+		}
 	};
 
 	GraphicsManager::~GraphicsManager() = default;
@@ -695,6 +747,7 @@ namespace CS562
 		impl->SetupShaders();
 		impl->SetupBuffers();
 		impl->InitShadowMap();
+		impl->SetupSkysphere();
 	}
 
 	void GraphicsManager::Update()
@@ -704,6 +757,8 @@ namespace CS562
 		impl->GeometryPass();
 
 		impl->LightingPass();
+
+		impl->RenderSkysphere();
 
 		impl->CopyBufferPass();
 
