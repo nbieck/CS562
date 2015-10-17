@@ -59,6 +59,10 @@ namespace CS562
 		void SetShadowC(float c);
 
 		void SetShadowBlurWidth(int w);
+		
+		//filename without extension.
+		//assumes existence of a .hdr and .irr.hdr file with that name
+		void SetSkybox(const std::string& filename);
 
 		static const int max_blur_width = 50;
 

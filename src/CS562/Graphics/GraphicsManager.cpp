@@ -71,6 +71,7 @@ namespace CS562
 
 		std::shared_ptr<Geometry> sky_sphere;
 		std::shared_ptr<Texture> sky_sphere_img;
+		std::shared_ptr<Texture> sky_sphere_irradiance;
 		std::shared_ptr<ShaderProgram> sky_sphere_shader;
 
 		std::shared_ptr<ShaderProgram> ambient_shader;
@@ -287,8 +288,13 @@ namespace CS562
 
 			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
 
+			ambient_shader->SetUniform("Position", 1);
+			ambient_shader->SetUniform("Normal", 2);
 			ambient_shader->SetUniform("Diffuse", 3);
-			ambient_shader->SetUniform("AmbientLight", glm::vec3(0.6f));
+			ambient_shader->SetUniform("Specular", 4);
+			ambient_shader->SetUniform("Shininess", 5);
+			ambient_shader->SetUniform("Irradiance", 6);
+			ambient_shader->SetUniform("Skysphere", 7);
 
 			light_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/deferred_light.shader");
 
@@ -358,13 +364,6 @@ namespace CS562
 			ResourceLoader::LoadObjFile(geom, mtl, "meshes/skysphere.obj");
 
 			sky_sphere = geom.front().first;
-
-			sky_sphere_img = ResourceLoader::LoadHDRTexFromFile("skyboxes/tokyo.hdr");
-			{
-				auto unbind = sky_sphere_img->Bind(1);
-				sky_sphere_img->SetParameter(TextureParameter::WrapS, TextureParamValue::Repeat);
-				sky_sphere_img->SetParameter(TextureParameter::WrapT, TextureParamValue::Repeat);
-			}
 		}
 
 		void InitShadowMap()
@@ -655,11 +654,17 @@ namespace CS562
 				gl::Enable(gl::BLEND);
 
 				g_buffer->BindTextures(1, false);
-				auto unbind_vao = FSQ->Bind();
-
+				if (sky_sphere_img)
 				{
-					auto unbind_shader = ambient_shader->Bind();
-					FSQ->Draw(PrimitiveTypes::Triangles, 6);
+					auto unbind_irradiance = sky_sphere_irradiance->Bind(6);
+					auto unbind_skysphere = sky_sphere_img->Bind(7);
+					ambient_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
+					auto unbind_vao = FSQ->Bind();
+
+					{
+						auto unbind_shader = ambient_shader->Bind();
+						FSQ->Draw(PrimitiveTypes::Triangles, 6);
+					}
 				}
 
 				NonShadowLights(view, proj);
@@ -757,8 +762,9 @@ namespace CS562
 		impl->GeometryPass();
 
 		impl->LightingPass();
-
-		impl->RenderSkysphere();
+		
+		if (impl->sky_sphere_img)
+			impl->RenderSkysphere();
 
 		impl->CopyBufferPass();
 
@@ -822,5 +828,11 @@ namespace CS562
 			weights[i] = std::exp(-0.5f * ((i - w) / s) * ((i - w) / s)) / total;
 
 		impl->blur_weights->Unmap();
+	}
+
+	void GraphicsManager::SetSkybox(const std::string & filename)
+	{
+		impl->sky_sphere_img = ResourceLoader::LoadHDRTexFromFile((filename + ".hdr").c_str());
+		impl->sky_sphere_irradiance = ResourceLoader::LoadHDRTexFromFile((filename + ".irr.hdr").c_str());
 	}
 }
