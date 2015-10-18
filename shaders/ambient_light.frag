@@ -35,13 +35,10 @@ vec3 BRDF_Diff(vec3 K_S)
     return K_S / PI;
 }
 
-vec3 BRDF(vec3 K_S, vec3 K_D, float alpha, vec3 L, vec3 V, vec3 H, vec3 N)
+vec3 BRDF_Spec_Monte_Carlo(vec3 L_i, vec3 K_S, vec3 L, vec3 V, vec3 H, vec3 N)
 {
-    vec3 diff = K_D / PI;
     float L_dot_H = pos_dot(L, H);
-    vec3 spec = D(H, N, alpha) * F(K_S, L, H) / (4 * L_dot_H * L_dot_H);
-
-    return diff + spec;
+    return (F(K_S, L, H) /  (4 * L_dot_H * L_dot_H)) * L_i * pos_dot(L, N);
 }
 
 vec2 DirToUV(vec3 direction)
@@ -61,5 +58,17 @@ void main()
     vec3 DiffColor = texelFetch(Diffuse, pixel_pos, 0).rgb;
 
     LightAccumulation = BRDF_Diff(DiffColor) * textureLod(Irradiance, DirToUV(N), 0).rgb;
- 
+
+    vec3 V = normalize(CamPos - Pos);
+    vec3 R = reflect(-V, N); 
+    vec3 SpecColor = texelFetch(Specular, pixel_pos, 0).rgb;
+
+    vec3 spec_accum = vec3(0);
+
+    vec3 Reflect_Color = textureLod(Skysphere, DirToUV(R), 0).rgb;
+    
+    spec_accum += BRDF_Spec_Monte_Carlo(Reflect_Color, SpecColor, R, V, N, normalize(V + R));
+
+    LightAccumulation += spec_accum;
+
 }
