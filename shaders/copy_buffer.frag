@@ -9,6 +9,9 @@ uniform sampler2D Shininess;
 
 uniform int BufferToShow;
 
+uniform float exposure;
+uniform float contrast;
+
 out vec4 outColor;
 
 void main()
@@ -18,7 +21,7 @@ void main()
     if (BufferToShow == 0)
     {
         vec4 c = texelFetch(LightAccumulation, texel_coord, 0);
-        outColor = pow(c / (c + vec4(1)), vec4(1.0 / 2.2));
+        outColor = pow(exposure * c / (exposure * c + vec4(1)), vec4(contrast / 2.2));
     }
     else if (BufferToShow == 1)
         outColor = abs(texelFetch(Position, texel_coord, 0) / vec4(200, 140, 115, 1));

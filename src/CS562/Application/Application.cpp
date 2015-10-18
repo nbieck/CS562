@@ -97,6 +97,9 @@ namespace CS562
 		unsigned num_files = SkyboxesInDirectory("skyboxes/", files);
 		int curr_file = 0;
 
+		float e = 1.0f;
+		float c = 1.0f;
+
 		gfx.SetSkybox(std::string(files.get()));
 
 		while (running_)
@@ -120,23 +123,43 @@ namespace CS562
 				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 6))
 					gfx.SetShownBuffer(show_buffer);
 
-				ImGui::Combo("Skybox", &curr_file, files.get());
-				if (ImGui::Button("Load Skybox"))
+				if (ImGui::CollapsingHeader("Tone mapping controls"))
 				{
-					std::string path = "skyboxes/";
-					char *filename = files.get();
-					for (int i = 0; i < curr_file; ++i)
-					{
-						filename += std::strlen(filename) + 1;
-					}
-					path += filename;
-					gfx.SetSkybox(path);
+					if (ImGui::SliderFloat("Tone mapping exposure control", &e, 0.1f, 10000.f, "%.3f", 2.f))
+						gfx.SetExposure(e);
+
+					if (ImGui::SliderFloat("Contrast", &c, 0.1f, 10.f))
+						gfx.SetContrast(c);
 				}
-				if (ImGui::Button("Recheck Directory"))
+
+				if (ImGui::CollapsingHeader("Material Properties"))
 				{
-					files.reset();
-					num_files = SkyboxesInDirectory("skyboxes/", files);
-					curr_file = 0;
+					ImGui::ColorEdit3("Diffuse", reinterpret_cast<float*>(&(scene.mat->k_d)));
+					ImGui::ColorEdit3("Specular", reinterpret_cast<float *>(&scene.mat->k_s));
+					ImGui::SliderFloat("Roughness", &scene.mat->shininess, 0.f, 10000.f, "%.3f", 2.f);
+				}
+
+				if (ImGui::CollapsingHeader("Skybox"))
+				{
+					ImGui::Combo("Skybox", &curr_file, files.get());
+					if (ImGui::Button("Load Skybox"))
+					{
+						std::string path = "skyboxes/";
+						char *filename = files.get();
+						for (int i = 0; i < curr_file; ++i)
+						{
+							filename += std::strlen(filename) + 1;
+						}
+						path += filename;
+						gfx.SetSkybox(path);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Recheck Directory"))
+					{
+						files.reset();
+						num_files = SkyboxesInDirectory("skyboxes/", files);
+						curr_file = 0;
+					}
 				}
 
 				gui.EndGuiWindow();

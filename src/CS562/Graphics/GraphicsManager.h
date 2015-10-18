@@ -64,6 +64,9 @@ namespace CS562
 		//assumes existence of a .hdr and .irr.hdr file with that name
 		void SetSkybox(const std::string& filename);
 
+		void SetExposure(float e);
+		void SetContrast(float c);
+
 		static const int max_blur_width = 50;
 
 		std::shared_ptr<Camera> current_cam;

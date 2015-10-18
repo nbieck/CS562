@@ -35,7 +35,7 @@ namespace CS562
 
 		ResourceLoader::LoadObjFile(geom, mtl, "meshes/dragon.obj");
 
-		std::shared_ptr<Material> mat = std::make_shared<Material>();
+		mat = std::make_shared<Material>();
 		mat->k_d = glm::vec3(1, 1, 1);
 		mat->k_s = glm::vec3(0.05, 0.05, 0.05);
 		mat->shininess = 50.f;

@@ -90,6 +90,9 @@ namespace CS562
 
 		float exp_c;
 
+		float exposure;
+		float contrast;
+
 		struct LightSphereData
 		{
 			glm::mat4 MVP;
@@ -116,7 +119,7 @@ namespace CS562
 		std::unique_ptr<Buffer<float>> blur_weights;
 
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
-			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(5)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(5), exposure(1.f), contrast(1.f)
 		{
 
 		}
@@ -687,6 +690,8 @@ namespace CS562
 
 			auto unbind_shader = buffer_copy->Bind();
 			auto unbind_vao = FSQ->Bind();
+			buffer_copy->SetUniform("exposure", exposure);
+			buffer_copy->SetUniform("contrast", contrast);
 			FSQ->Draw(PrimitiveTypes::Triangles, 6);
 
 			g_buffer->UnbindTextures();
@@ -834,5 +839,15 @@ namespace CS562
 	{
 		impl->sky_sphere_img = ResourceLoader::LoadHDRTexFromFile((filename + ".hdr").c_str());
 		impl->sky_sphere_irradiance = ResourceLoader::LoadHDRTexFromFile((filename + ".irr.hdr").c_str());
+	}
+
+	void GraphicsManager::SetExposure(float e)
+	{
+		impl->exposure = e;
+	}
+
+	void GraphicsManager::SetContrast(float c)
+	{
+		impl->contrast = c;
 	}
 }

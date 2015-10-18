@@ -38,6 +38,8 @@ namespace CS562
 
 		void ToggleRotate();
 
+		std::shared_ptr<Material> mat;
+
 	private:
 
 		std::shared_ptr<Object> AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material = nullptr);
