@@ -67,6 +67,8 @@ namespace CS562
 		void SetExposure(float e);
 		void SetContrast(float c);
 
+		void SetNumSamples(int n);
+
 		static const int max_blur_width = 50;
 
 		std::shared_ptr<Camera> current_cam;

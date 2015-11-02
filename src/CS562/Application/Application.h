@@ -38,6 +38,9 @@ namespace CS562
 
 	private:
 
+		enum MaterialPresets{Custom = 0, NonMetalBlack, Gold, Silver, Copper, Iron, Aluminum};
+		void UseMaterialPreset(MaterialPresets preset);
+
 		bool running_;
 	};
 }

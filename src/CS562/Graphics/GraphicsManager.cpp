@@ -93,6 +93,9 @@ namespace CS562
 		float exposure;
 		float contrast;
 
+		int num_samples;
+		std::unique_ptr<Buffer<glm::vec2>> random_numbers;
+
 		struct LightSphereData
 		{
 			glm::mat4 MVP;
@@ -357,6 +360,7 @@ namespace CS562
 				blur_weights->SetUpStorage(2 * max_blur_width + 1, BufferCreateFlags::MapRead | BufferCreateFlags::MapWrite);
 			}
 			owner.SetShadowBlurWidth(shadow_blur_width);
+			random_numbers = std::make_unique<Buffer<glm::vec2>>();
 		}
 		
 		void SetupSkysphere()
@@ -367,6 +371,8 @@ namespace CS562
 			ResourceLoader::LoadObjFile(geom, mtl, "meshes/skysphere.obj");
 
 			sky_sphere = geom.front().first;
+
+
 		}
 
 		void InitShadowMap()
@@ -662,6 +668,8 @@ namespace CS562
 					auto unbind_irradiance = sky_sphere_irradiance->Bind(6);
 					auto unbind_skysphere = sky_sphere_img->Bind(7);
 					ambient_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
+					ambient_shader->SetUniform("NumSamples", num_samples);
+					auto unbind_random = random_numbers->Bind(BufferTargets::ShaderStorage, 0);
 					auto unbind_vao = FSQ->Bind();
 
 					{
@@ -758,6 +766,7 @@ namespace CS562
 		impl->SetupBuffers();
 		impl->InitShadowMap();
 		impl->SetupSkysphere();
+		SetNumSamples(30);
 	}
 
 	void GraphicsManager::Update()
@@ -839,6 +848,11 @@ namespace CS562
 	{
 		impl->sky_sphere_img = ResourceLoader::LoadHDRTexFromFile((filename + ".hdr").c_str());
 		impl->sky_sphere_irradiance = ResourceLoader::LoadHDRTexFromFile((filename + ".irr.hdr").c_str());
+		{
+			auto unbind = impl->sky_sphere_img->Bind(1);
+			impl->sky_sphere_img->SetParameter(TextureParameter::MagFilter, TextureParamValue::FilterLinear);
+			impl->sky_sphere_img->SetParameter(TextureParameter::MinFilter, TextureParamValue::FilterLinearMipmapLinear);
+		}
 	}
 
 	void GraphicsManager::SetExposure(float e)
@@ -849,5 +863,33 @@ namespace CS562
 	void GraphicsManager::SetContrast(float c)
 	{
 		impl->contrast = c;
+	}
+	void GraphicsManager::SetNumSamples(int n)
+	{
+		impl->num_samples = n;
+
+		auto unbind = impl->random_numbers->Bind(BufferTargets::Vertex);
+
+		if (static_cast<int>(impl->random_numbers->GetSize()) < n)
+		{
+			impl->random_numbers->ResizeableStorage(n);
+		}
+
+		glm::vec2* data = impl->random_numbers->Map(MapModes::Write);
+
+		float p, u;
+		int kk;
+
+		for (int i = 0; i < n; ++i)
+		{
+			for (p = 0.5f, kk = i, u = 0.0f; kk; p *= 0.5f, kk >>= 1)
+				if (kk & 1)
+					u += p;
+			float v = (i + 0.5f) / n;
+			data[i].x = u;
+			data[i].y = v;
+		}
+
+		impl->random_numbers->Unmap();
 	}
 }

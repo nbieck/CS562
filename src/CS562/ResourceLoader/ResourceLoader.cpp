@@ -260,6 +260,8 @@ namespace CS562
 		tex->TransferData(0, 0, x, y, TextureFormat::RGB, TextureDataType::Float, pixel_data);
 		tex->GenerateMipMaps();
 
+		stbi_image_free(pixel_data);
+
 		return tex;
 	}
 

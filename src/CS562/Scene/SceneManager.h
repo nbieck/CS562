@@ -42,7 +42,10 @@ namespace CS562
 
 	private:
 
-		std::shared_ptr<Object> AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material = nullptr);
+		unsigned num_spheres_;
+		std::vector<std::shared_ptr<Material>> sphere_mats_;
+
+		std::shared_ptr<Object> AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material = nullptr, const glm::vec3& scale = glm::vec3(10, 10, 10));
 		void CompObjListRec(std::shared_ptr<Object> node, std::vector<std::shared_ptr<Object>>& list);
 
 		void AddSpotLight(const glm::vec3& pos, const glm::vec3& target, float inner_angle, float outer_angle, const glm::vec3& color, float intensity, float max_dist);
