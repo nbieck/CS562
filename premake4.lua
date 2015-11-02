@@ -32,7 +32,7 @@ end
 
 -- generate solution etc.
 solution(SOLUTION_NAME_)
-	configurations { "Debug", "Release" }
+	configurations { "Debug", "Release", "ReleaseWithDebug" }
 	platforms {"x32", "x64"}
 	
 	filter "platforms:x32"
@@ -77,6 +77,14 @@ solution(SOLUTION_NAME_)
                 links (LIBS[key])
                 links (RELEASELIBS[key])
                 objdir (OBJDIR.."/Release")
+
+            configuration "ReleaseWithDebug"
+            	defines {"NDEBUG"}
+            	flags {"Optimize", "FatalWarnings", "Symbols"}
+            	targetdir (BINDIR.."/RelSymbols")
+            	links(LIBS[key])
+            	links(RELEASELIBS[key])
+            	objdir(OBJDIR.."/RelSymbols")
         
 			--check that the source subdirectory for the project exists
 			--create it otherwise
