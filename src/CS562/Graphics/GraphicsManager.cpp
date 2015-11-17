@@ -91,6 +91,10 @@ namespace CS562
 		std::shared_ptr<Framebuffer> ao_fb;
 		std::shared_ptr<Texture> base_ao_map;
 		std::shared_ptr<ShaderProgram> ao_comp;
+		std::shared_ptr<Texture> ao_horiz;
+		std::shared_ptr<ShaderProgram> bilateral_horiz;
+		std::shared_ptr<Texture> ao_final;
+		std::shared_ptr<ShaderProgram> bilateral_vert;
 
 		float exp_c;
 
@@ -295,6 +299,8 @@ namespace CS562
 			buffer_copy->SetUniform("Specular", 5);
 			buffer_copy->SetUniform("Shininess", 6);
 			buffer_copy->SetUniform("AO_NonBlur", 7);
+			buffer_copy->SetUniform("AO_HorizontalBlur", 8);
+			buffer_copy->SetUniform("AO_Final", 9);
 			buffer_copy->SetUniform("BufferToShow", 0);
 
 			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
@@ -347,6 +353,10 @@ namespace CS562
 			ao_comp->SetUniform("W", static_cast<float>(width));
 			ao_comp->SetUniform("H", static_cast<float>(height));
 
+			bilateral_horiz = ResourceLoader::LoadShaderProgramFromFile("shaders/bilateral_horizontal.shader");
+
+			bilateral_vert = ResourceLoader::LoadShaderProgramFromFile("shaders/bilateral_vertical.shader");
+
 			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 			std::vector<std::shared_ptr<Material>> mats;
 			ResourceLoader::LoadObjFile(geom, mats, "meshes/sphere.obj");
@@ -381,13 +391,16 @@ namespace CS562
 				base_ao_map->AllocateSpace(width, height, TextureFormatInternal::R8, 1);
 				auto unbind_fb = ao_fb->Bind();
 				ao_fb->AttachTexture(Attachments::Color0, base_ao_map);
-
-				auto err = gl::CheckFramebufferStatus(gl::FRAMEBUFFER);
-
-				if (err != gl::FRAMEBUFFER_COMPLETE)
-				{
-					_CrtDbgBreak();
-				}
+			}
+			ao_horiz = std::make_shared<Texture>();
+			{
+				auto unbind = ao_horiz->Bind(0);
+				ao_horiz->AllocateSpace(width, height, TextureFormatInternal::R8, 1);
+			}
+			ao_final = std::make_shared<Texture>();
+			{
+				auto unbind = ao_final->Bind(0);
+				ao_final->AllocateSpace(width, height, TextureFormatInternal::R8, 1);
 			}
 		}
 		
@@ -676,16 +689,48 @@ namespace CS562
 
 		void AOPass()
 		{
-			auto unbind_shader = ao_comp->Bind();
-			auto unbind_fb = ao_fb->Bind();
+			//compute ao
+			{
+				auto unbind_shader = ao_comp->Bind();
+				auto unbind_fb = ao_fb->Bind();
 
-			g_buffer->BindTextures(1, false);
+				g_buffer->BindTextures(1, false);
 
-			auto unbind_geom = FSQ->Bind();
+				auto unbind_geom = FSQ->Bind();
 
-			FSQ->Draw(PrimitiveTypes::Triangles, 6);
+				FSQ->Draw(PrimitiveTypes::Triangles, 6);
 
-			g_buffer->UnbindTextures();
+				g_buffer->UnbindTextures();
+			}
+			//blur
+			{
+				auto unbind_buffer = blur_weights->Bind(BufferTargets::ShaderStorage, 0);
+
+				auto unbind3 = g_buffer->attachments[Buffers::Position]->BindImage(2, ImageAccessMode::ReadOnly);
+				auto unbind4 = g_buffer->attachments[Buffers::Normal]->BindImage(3, ImageAccessMode::ReadOnly);
+				{
+					auto unbind1 = base_ao_map->BindImage(0, ImageAccessMode::ReadOnly);
+					auto unbind2 = ao_horiz->BindImage(1, ImageAccessMode::WriteOnly);
+
+					auto unbind_shader = bilateral_horiz->Bind();
+					bilateral_horiz->SetUniform("filter_width", shadow_blur_width);
+
+					bilateral_horiz->RunCompute(static_cast<int>(std::ceil(width / 128.f)), height);
+
+					gl::MemoryBarrier(gl::SHADER_IMAGE_ACCESS_BARRIER_BIT);
+				}
+				{
+					auto unbind1 = ao_horiz->BindImage(0, ImageAccessMode::ReadOnly);
+					auto unbind2 = ao_final->BindImage(1, ImageAccessMode::WriteOnly);
+
+					auto unbind_shader = bilateral_vert->Bind();
+					bilateral_vert->SetUniform("filter_width", shadow_blur_width);
+
+					bilateral_vert->RunCompute(width, static_cast<int>(std::ceil(height / 128.f)));
+
+					gl::MemoryBarrier(gl::TEXTURE_FETCH_BARRIER_BIT | gl::TEXTURE_UPDATE_BARRIER_BIT);
+				}
+			}
 		}
 
 		void LightingPass()
@@ -709,7 +754,7 @@ namespace CS562
 				{
 					auto unbind_irradiance = sky_sphere_irradiance->Bind(6);
 					auto unbind_skysphere = sky_sphere_img->Bind(7);
-					auto unbind_ao = base_ao_map->Bind(8);
+					auto unbind_ao = ao_final->Bind(8);
 					ambient_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
 					ambient_shader->SetUniform("NumSamples", num_samples);
 					auto unbind_random = random_numbers->Bind(BufferTargets::ShaderStorage, 0);
@@ -739,6 +784,8 @@ namespace CS562
 
 			g_buffer->BindTextures(1);
 			auto unbind_tex = base_ao_map->Bind(7);
+			auto unbind_tex2 = ao_horiz->Bind(8);
+			auto unbind_tex3 = ao_final->Bind(9);
 
 			auto unbind_shader = buffer_copy->Bind();
 			auto unbind_vao = FSQ->Bind();

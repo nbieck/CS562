@@ -7,6 +7,8 @@ uniform sampler2D Diffuse;
 uniform sampler2D Specular;
 uniform sampler2D Shininess;
 uniform sampler2D AO_NonBlur;
+uniform sampler2D AO_HorizontalBlur;
+uniform sampler2D AO_Final;
 
 uniform int BufferToShow;
 
@@ -36,6 +38,10 @@ void main()
         outColor = texelFetch(Shininess, texel_coord, 0);
     else if (BufferToShow == 6)
         outColor = vec4(vec3(texelFetch(AO_NonBlur, texel_coord, 0).r), 1);
+    else if (BufferToShow == 7)
+        outColor = vec4(vec3(texelFetch(AO_HorizontalBlur, texel_coord, 0).r), 1);
+    else if (BufferToShow == 8)
+        outColor = vec4(vec3(texelFetch(AO_Final, texel_coord, 0).r), 1);
     else
         outColor = vec4(1, 0.5, 0.5, 1);
 }

@@ -91,7 +91,7 @@ namespace CS562
 		cam_control.Init(WIDTH, HEIGHT);
 
 		int show_buffer = DrawBuffers::LightAccum;
-		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)"};
+		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)", "AO (horizontal blur)", "AO (final)"};
 
 		const char* presets[] = { "Custom", "Black Non-Metal", "Gold", "Silver", "Copper", "Iron", "Aluminum" };
 
@@ -113,6 +113,7 @@ namespace CS562
 		float ao_s = 1.0;
 		float ao_k = 1.0;
 		int ao_samples = 20;
+		int ao_blur = 5;
 
 		while (running_)
 		{
@@ -127,7 +128,7 @@ namespace CS562
 			{
 				gui.StartGuiWindow();		
 
-				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 7))
+				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 9))
 					gfx.SetShownBuffer(show_buffer);
 
 				if (ImGui::CollapsingHeader("Tone mapping controls"))
@@ -164,6 +165,8 @@ namespace CS562
 						gfx.SetAOScale(ao_s);
 					if (ImGui::SliderFloat("Contrast", &ao_k, 0.1f, 10.f))
 						gfx.SetAOContrast(ao_k);
+					if (ImGui::SliderInt("Blur Width", &ao_blur, 1, 50))
+						gfx.SetShadowBlurWidth(ao_blur);
 				}
 
 				if (ImGui::CollapsingHeader("Skybox"))

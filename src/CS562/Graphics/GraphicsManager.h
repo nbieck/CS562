@@ -34,7 +34,9 @@ namespace CS562
 			Diffuse,
 			Specular,
 			Shininess,
-			AO_NonBlur
+			AO_NonBlur,
+			AO_HorizontalBlur,
+			AO_Final
 		};
 	}
 

@@ -84,7 +84,7 @@ namespace CS562
 		}
 		else
 		{
-			//gl::BindImageTexture(last_bind_location_, 0, 0, gl::FALSE_, 0, gl::READ_ONLY, gl::RGB8);
+			gl::BindImageTexture(last_bind_location_, 0, 0, gl::FALSE_, 0, gl::READ_ONLY, gl::RGBA8);
 		}
 	}
 
