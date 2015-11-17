@@ -4,12 +4,12 @@
 uniform sampler2D PositionBuffer;
 uniform sampler2D NormalBuffer;
 
-const float delta = 0.001;
-const float R = 1;
-const float c = 0.1*R;
-const int n = 20;
-const float s = 1.0;
-const float k = 1.0;
+uniform float delta = 0.001;
+uniform float R = 1;
+uniform float c = 0.1;
+uniform int n = 20;
+uniform float s = 1.0;
+uniform float k = 1.0;
 uniform float W;
 uniform float H;
 
@@ -52,7 +52,7 @@ void main()
     
     inv_occlusion *= 2 * PI * c / n;
 
-    float occlusion = pow(1 - s * inv_occlusion, k);
+    float occlusion = pow(max(0,1 - s * inv_occlusion), k);
 
     AO = occlusion;
 }

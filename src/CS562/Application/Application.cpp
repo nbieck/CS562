@@ -108,6 +108,12 @@ namespace CS562
 
 		gfx.SetSkybox(std::string("skyboxes/") + files.get());
 
+		float ao_R = 1.0;
+		float ao_delta = 0.001f;
+		float ao_s = 1.0;
+		float ao_k = 1.0;
+		int ao_samples = 20;
+
 		while (running_)
 		{
 			time.Update();
@@ -144,6 +150,20 @@ namespace CS562
 						UseMaterialPreset(preset);
 					if (ImGui::SliderInt("Samples", &num_samples, 1, 100))
 						gfx.SetNumSamples(num_samples);
+				}
+
+				if (ImGui::CollapsingHeader("Ambient Occlusion"))
+				{
+					if (ImGui::SliderFloat("Radius", &ao_R, 0.01f, 10.0f, "%.3f", 2.0f))
+						gfx.SetAORadius(ao_R);
+					if (ImGui::SliderFloat("Delta", &ao_delta, 0.0001f, 1.0f, "%.4f", 2.0f))
+						gfx.SetAODelta(ao_delta);
+					if (ImGui::SliderInt("# Samples", &ao_samples, 1, 50))
+						gfx.SetAOSamples(ao_samples);
+					if (ImGui::SliderFloat("Scale", &ao_s, 0.1f, 10.f))
+						gfx.SetAOScale(ao_s);
+					if (ImGui::SliderFloat("Contrast", &ao_k, 0.1f, 10.f))
+						gfx.SetAOContrast(ao_k);
 				}
 
 				if (ImGui::CollapsingHeader("Skybox"))

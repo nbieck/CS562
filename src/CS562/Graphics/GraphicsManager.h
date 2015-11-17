@@ -70,6 +70,12 @@ namespace CS562
 
 		void SetNumSamples(int n);
 
+		void SetAORadius(float r);
+		void SetAODelta(float d);
+		void SetAOSamples(int n);
+		void SetAOScale(float s);
+		void SetAOContrast(float k);
+
 		static const int max_blur_width = 50;
 
 		std::shared_ptr<Camera> current_cam;

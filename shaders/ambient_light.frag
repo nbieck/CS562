@@ -12,6 +12,8 @@ uniform sampler2D Shininess;
 uniform sampler2D Irradiance;
 uniform sampler2D Skysphere;
 
+uniform sampler2D AO;
+
 uniform vec3 CamPos;
 
 uniform int NumSamples;
@@ -144,5 +146,9 @@ void main()
     spec_accum /= NumSamples;
 
     LightAccumulation += spec_accum;
+
+    float occlusion = texelFetch(AO, pixel_pos, 0).r;
+
+    LightAccumulation *= occlusion;
 
 }

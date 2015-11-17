@@ -306,6 +306,7 @@ namespace CS562
 			ambient_shader->SetUniform("Shininess", 5);
 			ambient_shader->SetUniform("Irradiance", 6);
 			ambient_shader->SetUniform("Skysphere", 7);
+			ambient_shader->SetUniform("AO", 8);
 
 			light_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/deferred_light.shader");
 
@@ -708,6 +709,7 @@ namespace CS562
 				{
 					auto unbind_irradiance = sky_sphere_irradiance->Bind(6);
 					auto unbind_skysphere = sky_sphere_img->Bind(7);
+					auto unbind_ao = base_ao_map->Bind(8);
 					ambient_shader->SetUniform("CamPos", owner.current_cam->owner_world_trans_.position);
 					ambient_shader->SetUniform("NumSamples", num_samples);
 					auto unbind_random = random_numbers->Bind(BufferTargets::ShaderStorage, 0);
@@ -936,5 +938,31 @@ namespace CS562
 		}
 
 		impl->random_numbers->Unmap();
+	}
+
+	void GraphicsManager::SetAORadius(float r)
+	{
+		impl->ao_comp->SetUniform("R", r);
+		impl->ao_comp->SetUniform("c", r * 0.1f);
+	}
+
+	void GraphicsManager::SetAODelta(float d)
+	{
+		impl->ao_comp->SetUniform("delta", d);
+	}
+
+	void GraphicsManager::SetAOSamples(int n)
+	{
+		impl->ao_comp->SetUniform("n", n);
+	}
+
+	void GraphicsManager::SetAOScale(float s)
+	{
+		impl->ao_comp->SetUniform("s", s);
+	}
+
+	void GraphicsManager::SetAOContrast(float k)
+	{
+		impl->ao_comp->SetUniform("k", k);
 	}
 }
