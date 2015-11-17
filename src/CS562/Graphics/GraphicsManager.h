@@ -33,7 +33,8 @@ namespace CS562
 			Normal,
 			Diffuse,
 			Specular,
-			Shininess
+			Shininess,
+			AO_NonBlur
 		};
 	}
 

@@ -7,6 +7,7 @@ layout(location = 2) in vec2 m_uv;
 out vec3 w_position;
 out vec3 w_normal;
 out vec2 uv;
+out float d;
 
 uniform mat4 MVP;
 uniform mat4 NormalMat;
@@ -18,4 +19,5 @@ void main()
     w_normal = (NormalMat * vec4(m_normal, 0)).xyz;
     w_position = (Model * vec4(m_position, 1)).xyz;
     uv = m_uv;
+    d = gl_Position.w;
 }

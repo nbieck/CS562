@@ -91,7 +91,7 @@ namespace CS562
 		cam_control.Init(WIDTH, HEIGHT);
 
 		int show_buffer = DrawBuffers::LightAccum;
-		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess"};
+		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)"};
 
 		const char* presets[] = { "Custom", "Black Non-Metal", "Gold", "Silver", "Copper", "Iron", "Aluminum" };
 
@@ -121,7 +121,7 @@ namespace CS562
 			{
 				gui.StartGuiWindow();		
 
-				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 6))
+				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 7))
 					gfx.SetShownBuffer(show_buffer);
 
 				if (ImGui::CollapsingHeader("Tone mapping controls"))

@@ -88,6 +88,10 @@ namespace CS562
 		std::shared_ptr<Texture> shadow_map_depth;
 		std::shared_ptr<Texture> filtered_shadow_map;
 
+		std::shared_ptr<Framebuffer> ao_fb;
+		std::shared_ptr<Texture> base_ao_map;
+		std::shared_ptr<ShaderProgram> ao_comp;
+
 		float exp_c;
 
 		float exposure;
@@ -290,6 +294,7 @@ namespace CS562
 			buffer_copy->SetUniform("Diffuse", 4);
 			buffer_copy->SetUniform("Specular", 5);
 			buffer_copy->SetUniform("Shininess", 6);
+			buffer_copy->SetUniform("AO_NonBlur", 7);
 			buffer_copy->SetUniform("BufferToShow", 0);
 
 			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
@@ -335,6 +340,12 @@ namespace CS562
 
 			sky_sphere_shader->SetUniform("sky_tex", 1);
 
+			ao_comp = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_occlusion.shader");
+			ao_comp->SetUniform("PositionBuffer", 1);
+			ao_comp->SetUniform("NormalBuffer", 2);
+			ao_comp->SetUniform("W", static_cast<float>(width));
+			ao_comp->SetUniform("H", static_cast<float>(height));
+
 			std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 			std::vector<std::shared_ptr<Material>> mats;
 			ResourceLoader::LoadObjFile(geom, mats, "meshes/sphere.obj");
@@ -361,6 +372,22 @@ namespace CS562
 			}
 			owner.SetShadowBlurWidth(shadow_blur_width);
 			random_numbers = std::make_unique<Buffer<glm::vec2>>();
+
+			base_ao_map = std::make_shared<Texture>();
+			ao_fb = std::make_shared<Framebuffer>();
+			{
+				auto unbind_tex = base_ao_map->Bind(0);
+				base_ao_map->AllocateSpace(width, height, TextureFormatInternal::R8, 1);
+				auto unbind_fb = ao_fb->Bind();
+				ao_fb->AttachTexture(Attachments::Color0, base_ao_map);
+
+				auto err = gl::CheckFramebufferStatus(gl::FRAMEBUFFER);
+
+				if (err != gl::FRAMEBUFFER_COMPLETE)
+				{
+					_CrtDbgBreak();
+				}
+			}
 		}
 		
 		void SetupSkysphere()
@@ -646,6 +673,20 @@ namespace CS562
 			}
 		}
 
+		void AOPass()
+		{
+			auto unbind_shader = ao_comp->Bind();
+			auto unbind_fb = ao_fb->Bind();
+
+			g_buffer->BindTextures(1, false);
+
+			auto unbind_geom = FSQ->Bind();
+
+			FSQ->Draw(PrimitiveTypes::Triangles, 6);
+
+			g_buffer->UnbindTextures();
+		}
+
 		void LightingPass()
 		{
 			gl::Disable(gl::DEPTH_TEST);
@@ -695,6 +736,7 @@ namespace CS562
 			gl::Disable(gl::DEPTH_TEST);
 
 			g_buffer->BindTextures(1);
+			auto unbind_tex = base_ao_map->Bind(7);
 
 			auto unbind_shader = buffer_copy->Bind();
 			auto unbind_vao = FSQ->Bind();
@@ -774,6 +816,9 @@ namespace CS562
 		//clear the default frame buffer
 		gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 		impl->GeometryPass();
+
+		//AO
+		impl->AOPass();
 
 		impl->LightingPass();
 		

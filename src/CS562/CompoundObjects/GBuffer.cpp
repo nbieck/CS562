@@ -24,7 +24,7 @@ namespace CS562
 		}
 		{
 			auto unbind = attachments[Buffers::Position]->Bind(1);
-			attachments[Buffers::Position]->AllocateSpace(width, height, TextureFormatInternal::RGB32F, 1);
+			attachments[Buffers::Position]->AllocateSpace(width, height, TextureFormatInternal::RGBA32F, 1);
 		}
 		{
 			auto unbind = attachments[Buffers::Normal]->Bind(1);
