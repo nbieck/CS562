@@ -33,11 +33,12 @@ namespace CS562
 
 		static std::shared_ptr<Texture> LoadHDRTexFromFile(const std::string& filename);
 
+		static int ComputeMipLevels(int width, int height);
+
 	private:
 
 		static std::map<std::string, std::weak_ptr<Texture>> loaded_textures_;
 
-		static int ComputeMipLevels(int width, int height);
 
 		template <typename T>
 		static void InvertImageVertically(int width, int height, int channels, T * const image)

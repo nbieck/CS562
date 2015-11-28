@@ -52,9 +52,9 @@ namespace CS562
 		return Unbinder<Texture>(*this);
 	}
 
-	Unbinder<Texture> Texture::BindImage(unsigned bind_location, ImageAccessMode::type access)
+	Unbinder<Texture> Texture::BindImage(unsigned bind_location, ImageAccessMode::type access, int mip_level)
 	{
-		gl::BindImageTexture(bind_location, gl_object_, 0, gl::FALSE_, 0, access, static_cast<unsigned>(format_));
+		gl::BindImageTexture(bind_location, gl_object_, mip_level, gl::FALSE_, 0, access, static_cast<unsigned>(format_));
 
 		last_bind_location_ = bind_location;
 		last_bound_as_tex_ = false;

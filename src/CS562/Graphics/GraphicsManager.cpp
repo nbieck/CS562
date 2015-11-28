@@ -96,6 +96,10 @@ namespace CS562
 		std::shared_ptr<Texture> ao_final;
 		std::shared_ptr<ShaderProgram> bilateral_vert;
 
+		std::shared_ptr<Texture> hi_z_buffer;
+		std::shared_ptr<ShaderProgram> hi_z_base_level;
+		std::shared_ptr<ShaderProgram> hi_z_comp_mip;
+
 		float exp_c;
 
 		float exposure;
@@ -129,8 +133,10 @@ namespace CS562
 		int shadow_blur_width;
 		std::unique_ptr<Buffer<float>> blur_weights;
 
+		bool do_ssr;
+
 		PImpl(int width, int height, GraphicsManager& owner, WindowManager& window)
-			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(5), exposure(1.f), contrast(1.f)
+			: width(width), height(height), owner(owner), window(window), mode(Drawmode::Solid), show_shadow_map(true), exp_c(80.f), shadow_blur_width(5), exposure(1.f), contrast(1.f), do_ssr(true)
 		{
 
 		}
@@ -442,6 +448,15 @@ namespace CS562
 			}
 		}
 
+		void InitSSR()
+		{
+			hi_z_buffer = std::make_shared<Texture>();
+			{
+				auto unbind = hi_z_buffer->Bind(0);
+				hi_z_buffer->AllocateSpace(width, height, TextureFormatInternal::RG32F, ResourceLoader::ComputeMipLevels(width, height));
+			}
+		}
+		
 		void GeometryPass()
 		{
 			gl::Enable(gl::DEPTH_TEST);
@@ -733,6 +748,20 @@ namespace CS562
 			}
 		}
 
+		void ScreenSpaceReflect()
+		{
+			//create Hi-Z
+
+
+			//coverage (if cone trace)
+
+			//raytrace
+
+			//blur (if cone trace)
+
+			//cone trace
+		}
+
 		void LightingPass()
 		{
 			gl::Disable(gl::DEPTH_TEST);
@@ -770,6 +799,10 @@ namespace CS562
 			}
 
 			ShadowLights(view, proj);
+
+			//SSR
+			if (do_ssr)
+				ScreenSpaceReflect();
 
 			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
@@ -857,6 +890,7 @@ namespace CS562
 		impl->SetupBuffers();
 		impl->InitShadowMap();
 		impl->SetupSkysphere();
+		impl->InitSSR();
 		SetNumSamples(30);
 	}
 

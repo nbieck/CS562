@@ -136,7 +136,7 @@ namespace CS562
 					if (ImGui::SliderFloat("Tone mapping exposure control", &e, 0.1f, 10000.f, "%.3f", 2.f))
 						gfx.SetExposure(e);
 
-					if (ImGui::SliderFloat("Contrast", &c, 0.1f, 10.f))
+					if (ImGui::SliderFloat("Contrast##ToneMapping", &c, 0.1f, 10.f))
 						gfx.SetContrast(c);
 				}
 

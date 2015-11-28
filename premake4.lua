@@ -6,8 +6,8 @@
 
 -- Any variable that is a table should have one entry per project, as it stores per-project settings
 SOLUTION_NAME_ = "CS562"
-PROJECTS_ = { "CS562", "CompIrrandiance" }
-KINDS = {"ConsoleApp", "ConsoleApp"}
+PROJECTS_ = { "CS562" }
+KINDS = {"ConsoleApp"}
 OBJDIR = "obj"
 BINDIR = "bin"
 LIBDIR = "libs"
@@ -17,9 +17,9 @@ DEFINES = {"GLM_FORCE_RADIANS"}
 -- These are tables of tables, as we might want multiple links per project
 -- LIBS are libraries that will always be linked
 -- The other two are configuration specific
-LIBS = {{"opengl32"}, {}}
-DEBUGLIBS = {{}, {}}
-RELEASELIBS = {{}, {}}
+LIBS = {{"opengl32"}}
+DEBUGLIBS = {{}}
+RELEASELIBS = {{}}
 
 --generate folders if they do not yet exist
 folders = {OBJDIR, BINDIR, LIBDIR, INCLUDEDIR, SOURCEDIR, "dlls"}

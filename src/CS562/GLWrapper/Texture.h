@@ -99,7 +99,7 @@ namespace CS562
 
 		//Binding - Unbinding
 		Unbinder<Texture> Bind(unsigned bind_location);
-		Unbinder<Texture> BindImage(unsigned bind_location, ImageAccessMode::type access);
+		Unbinder<Texture> BindImage(unsigned bind_location, ImageAccessMode::type access, int mip_level = 0);
 		void Bind_NoUnbind(unsigned bind_location);
 		void Unbind();
 

@@ -35,7 +35,7 @@ namespace CS562
 		std::vector<std::pair<std::shared_ptr<Geometry>, unsigned>> geom;
 		std::vector<std::shared_ptr<Material>> mtl;
 
-		ResourceLoader::LoadObjFile(geom, mtl, "meshes/dragon.obj");
+		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
 
 		mat = std::make_shared<Material>();
 		mat->k_d = glm::vec3(1, 1, 1);
@@ -44,27 +44,27 @@ namespace CS562
 
 		for (auto g : geom)
 		{
-			AddObject(glm::vec3(0), shader, g.first, mat);
+			AddObject(glm::vec3(0), shader, g.first, mtl[g.second], glm::vec3(0.1f));
 		}
 
-		geom.clear();
-		mtl.clear();
-		ResourceLoader::LoadObjFile(geom, mtl, "meshes/bunny.obj");
-		
-		for (unsigned i = 0; i < num_spheres_; ++i)
-		{
-			auto sph_mat = std::make_shared<Material>();
-			*sph_mat = *mat;
-			AddObject(glm::vec3(7 * glm::cos(glm::two_pi<float>() * static_cast<float>(i) / num_spheres_), -2.5, -7 * glm::sin(glm::two_pi<float>() * static_cast<float>(i) / num_spheres_)), shader, geom.front().first, sph_mat, glm::vec3(1.f));
-			sphere_mats_.push_back(sph_mat);
-		}
-
-		geom.clear();
-		mtl.clear();
-		ResourceLoader::LoadObjFile(geom, mtl, "meshes/plane.obj");
-		auto plane_mat = std::make_shared<Material>();
-		*plane_mat = *mat;
-		AddObject(glm::vec3(0, -2.8, 0), shader, geom.front().first, plane_mat);
+		//geom.clear();
+		//mtl.clear();
+		//ResourceLoader::LoadObjFile(geom, mtl, "meshes/bunny.obj");
+		//
+		//for (unsigned i = 0; i < num_spheres_; ++i)
+		//{
+		//	auto sph_mat = std::make_shared<Material>();
+		//	*sph_mat = *mat;
+		//	AddObject(glm::vec3(7 * glm::cos(glm::two_pi<float>() * static_cast<float>(i) / num_spheres_), -2.5, -7 * glm::sin(glm::two_pi<float>() * static_cast<float>(i) / num_spheres_)), shader, geom.front().first, sph_mat, glm::vec3(1.f));
+		//	sphere_mats_.push_back(sph_mat);
+		//}
+		//
+		//geom.clear();
+		//mtl.clear();
+		//ResourceLoader::LoadObjFile(geom, mtl, "meshes/plane.obj");
+		//auto plane_mat = std::make_shared<Material>();
+		//*plane_mat = *mat;
+		//AddObject(glm::vec3(0, -2.8, 0), shader, geom.front().first, plane_mat);
 	}
 
 	std::shared_ptr<Object> SceneManager::AddObject(const glm::vec3 position, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material, const glm::vec3& scale)
@@ -91,12 +91,12 @@ namespace CS562
 
 	void SceneManager::Update()
 	{
-		for (unsigned i = 0; i < num_spheres_; ++i)
-		{
-			auto& sp_mat = sphere_mats_[i];
-			*sp_mat = *mat;
-			sp_mat->shininess = (500.f / num_spheres_) * i + 2.f;
-		}
+		//for (unsigned i = 0; i < num_spheres_; ++i)
+		//{
+		//	auto& sp_mat = sphere_mats_[i];
+		//	*sp_mat = *mat;
+		//	sp_mat->shininess = (500.f / num_spheres_) * i + 2.f;
+		//}
 	}
 
 	std::vector<std::shared_ptr<Object>> SceneManager::GetObjectList()

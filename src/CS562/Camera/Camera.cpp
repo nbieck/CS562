@@ -22,7 +22,7 @@ namespace CS562
 
 	glm::mat4 Camera::GetProjectionMatrix() const
 	{
-		return glm::perspectiveFov(fov, aspect_ratio, 1.f, near_plane, far_plane);
+		return glm::infinitePerspective(fov, aspect_ratio, near_plane);
 	}
 
 	glm::mat4 Camera::GetViewMatrix() const
