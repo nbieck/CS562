@@ -9,8 +9,10 @@ uniform sampler2D Shininess;
 uniform sampler2D AO_NonBlur;
 uniform sampler2D AO_HorizontalBlur;
 uniform sampler2D AO_Final;
+uniform sampler2D HiZBuffer;
 
 uniform int BufferToShow;
+uniform int HiZLevel;
 
 uniform float exposure;
 uniform float contrast;
@@ -20,6 +22,7 @@ out vec4 outColor;
 void main()
 {
     ivec2 texel_coord = ivec2(gl_FragCoord.xy);
+    vec2 uv = vec2(texel_coord) / vec2(1600, 900);
 
     if (BufferToShow == 0)
     {
@@ -42,6 +45,8 @@ void main()
         outColor = vec4(vec3(texelFetch(AO_HorizontalBlur, texel_coord, 0).r), 1);
     else if (BufferToShow == 8)
         outColor = vec4(vec3(texelFetch(AO_Final, texel_coord, 0).r), 1);
+    else if (BufferToShow == 9)
+        outColor = vec4(vec3(pow(textureLod(HiZBuffer, uv, HiZLevel).r, 5.0)), 1);
     else
         outColor = vec4(1, 0.5, 0.5, 1);
 }

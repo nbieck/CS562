@@ -53,7 +53,8 @@ namespace CS562
 		WrapS = 0x2802,
 		WrapT = 0x2803,
 		MagFilter = 0x2800,
-		MinFilter = 0x2801
+		MinFilter = 0x2801, 
+		TextureCompareMode = 0x884C
 	};
 
 	namespace TextureParamValue
@@ -68,6 +69,8 @@ namespace CS562
 		const int ClampToBorder = 0x812D;
 		const int MirroredRepeat = 0x8370;
 		const int Repeat = 0x2901;
+		const int None = 0;
+		const int CompareRefToTex = 0x884E;
 	}
 
 	namespace ImageAccessMode

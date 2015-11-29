@@ -91,7 +91,7 @@ namespace CS562
 		cam_control.Init(WIDTH, HEIGHT);
 
 		int show_buffer = DrawBuffers::LightAccum;
-		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)", "AO (horizontal blur)", "AO (final)"};
+		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)", "AO (horizontal blur)", "AO (final)", "Hi-Z-Buffer"};
 
 		const char* presets[] = { "Custom", "Black Non-Metal", "Gold", "Silver", "Copper", "Iron", "Aluminum" };
 
@@ -115,6 +115,8 @@ namespace CS562
 		int ao_samples = 20;
 		int ao_blur = 5;
 
+		int mip_level = 0;
+
 		while (running_)
 		{
 			time.Update();
@@ -128,8 +130,14 @@ namespace CS562
 			{
 				gui.StartGuiWindow();		
 
-				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 9))
+				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 10))
 					gfx.SetShownBuffer(show_buffer);
+
+				if (show_buffer == 9)
+				{
+					if (ImGui::SliderInt("MipLevel", &mip_level, 0, 10))
+						gfx.SetHiZMip(mip_level);
+				}
 
 				if (ImGui::CollapsingHeader("Tone mapping controls"))
 				{

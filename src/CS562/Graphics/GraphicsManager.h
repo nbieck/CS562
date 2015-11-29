@@ -56,6 +56,7 @@ namespace CS562
 		void SetDrawmode(Drawmode mode);
 
 		void SetShownBuffer(int buffer);
+		void SetHiZMip(int mip_level);
 
 		void SetShowShadowMap(bool show);
 

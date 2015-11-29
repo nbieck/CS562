@@ -1,0 +1,35 @@
+#version 440
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0, rg32f) uniform restrict readonly image2D prev_level;
+layout(binding = 1, rg32f) uniform restrict writeonly image2D curr_level;
+
+uniform int width;
+uniform int height;
+
+ivec2 clamp_to_tex(ivec2 coord)
+{
+    return clamp(coord, ivec2(0), ivec2(width - 1, height - 1));
+}
+
+void main()
+{
+    ivec2 pix_pos = ivec2(gl_GlobalInvocationID.xy);
+
+    ivec2 sample_pos = pix_pos * 2;
+
+    int offset_x = 1;//(width % 2 == 0) ? 1 : 2;
+    int offset_y = 1;//(height % 2 == 0) ? 1 : 2;
+
+    vec2 a = imageLoad(prev_level, sample_pos).xy;
+    vec2 b = imageLoad(prev_level, clamp_to_tex(sample_pos + ivec2(offset_x, 0))).xy;
+    vec2 c = imageLoad(prev_level, clamp_to_tex(sample_pos + ivec2(0, offset_y))).xy;
+    vec2 d = imageLoad(prev_level, clamp_to_tex(sample_pos + ivec2(offset_x, offset_y))).xy;
+
+    vec2 result = vec2(
+        min(min(a.x, b.x), min(c.x, d.x)),
+        max(max(a.y, b.y), max(c.y, d.y)));
+
+    imageStore(curr_level, pix_pos, vec4(result, 0, 0));
+}

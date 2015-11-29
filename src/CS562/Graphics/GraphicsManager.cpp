@@ -96,9 +96,11 @@ namespace CS562
 		std::shared_ptr<Texture> ao_final;
 		std::shared_ptr<ShaderProgram> bilateral_vert;
 
+		std::shared_ptr<Framebuffer> hi_z_fb;
 		std::shared_ptr<Texture> hi_z_buffer;
 		std::shared_ptr<ShaderProgram> hi_z_base_level;
 		std::shared_ptr<ShaderProgram> hi_z_comp_mip;
+		int hi_z_mips;
 
 		float exp_c;
 
@@ -307,7 +309,9 @@ namespace CS562
 			buffer_copy->SetUniform("AO_NonBlur", 7);
 			buffer_copy->SetUniform("AO_HorizontalBlur", 8);
 			buffer_copy->SetUniform("AO_Final", 9);
+			buffer_copy->SetUniform("HiZBuffer", 10);
 			buffer_copy->SetUniform("BufferToShow", 0);
+			buffer_copy->SetUniform("HiZLevel", 0);
 
 			ambient_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/ambient_light.shader");
 
@@ -453,7 +457,19 @@ namespace CS562
 			hi_z_buffer = std::make_shared<Texture>();
 			{
 				auto unbind = hi_z_buffer->Bind(0);
-				hi_z_buffer->AllocateSpace(width, height, TextureFormatInternal::RG32F, ResourceLoader::ComputeMipLevels(width, height));
+				hi_z_mips = ResourceLoader::ComputeMipLevels(width, height);
+				hi_z_buffer->AllocateSpace(width, height, TextureFormatInternal::RG32F, hi_z_mips);
+			}
+			hi_z_fb = std::make_shared<Framebuffer>();
+			{
+				auto unbind_fb = hi_z_fb->Bind();
+				hi_z_fb->AttachTexture(Attachments::Color0, hi_z_buffer);
+			}
+			hi_z_base_level = ResourceLoader::LoadShaderProgramFromFile("shaders/init_ssr.shader");
+			hi_z_comp_mip = ResourceLoader::LoadShaderProgramFromFile("shaders/hi_z_mip.shader");
+			{
+				auto unbind_tex = g_buffer->attachments[Buffers::Depth]->Bind(1);
+				g_buffer->attachments[Buffers::Depth]->SetParameter(TextureParameter::TextureCompareMode, TextureParamValue::None);
 			}
 		}
 		
@@ -751,15 +767,48 @@ namespace CS562
 		void ScreenSpaceReflect()
 		{
 			//create Hi-Z
+			{
+				//fill base level
+				{
+					auto unbind_fb = hi_z_fb->Bind();
+					auto unbind_shader = hi_z_base_level->Bind();
 
+					auto unbind_tex = g_buffer->attachments[Buffers::Depth]->Bind(1);
+
+					auto unbind_vao = FSQ->Bind();
+
+					gl::Clear(gl::COLOR_BUFFER_BIT);
+					gl::Disable(gl::DEPTH_TEST);
+					FSQ->Draw(PrimitiveTypes::Triangles, 6);
+					gl::Enable(gl::DEPTH_TEST);
+				}
+				//create mips
+				auto unbind_comp = hi_z_comp_mip->Bind();
+				int mip_width = width;
+				int mip_height = height;
+				for (int i = 1; i < hi_z_mips; ++i)
+				{
+					auto unbind = hi_z_buffer->BindImage(0, ImageAccessMode::ReadOnly, i - 1);
+					auto unbind_2 = hi_z_buffer->BindImage(1, ImageAccessMode::WriteOnly, i);
+
+					hi_z_comp_mip->SetUniform("width", mip_width);
+					hi_z_comp_mip->SetUniform("height", mip_height);
+
+					mip_width = std::max(mip_width / 2, 1);
+					mip_height = std::max(mip_height / 2, 1);
+
+					hi_z_comp_mip->RunCompute(static_cast<int>(std::ceil(static_cast<float>(mip_width) / 16)), static_cast<int>(std::ceil(static_cast<float>(mip_height) / 16)));
+
+
+					gl::MemoryBarrier(gl::SHADER_IMAGE_ACCESS_BARRIER_BIT);
+				}
+			}
 
 			//coverage (if cone trace)
 
-			//raytrace
-
 			//blur (if cone trace)
 
-			//cone trace
+			//raytrace + cone trace
 		}
 
 		void LightingPass()
@@ -819,6 +868,7 @@ namespace CS562
 			auto unbind_tex = base_ao_map->Bind(7);
 			auto unbind_tex2 = ao_horiz->Bind(8);
 			auto unbind_tex3 = ao_final->Bind(9);
+			auto unbind_tex4 = hi_z_buffer->Bind(10);
 
 			auto unbind_shader = buffer_copy->Bind();
 			auto unbind_vao = FSQ->Bind();
@@ -936,6 +986,11 @@ namespace CS562
 	void GraphicsManager::SetShownBuffer(int buffer)
 	{
 		impl->buffer_copy->SetUniform("BufferToShow", buffer);
+	}
+
+	void GraphicsManager::SetHiZMip(int mip_level)
+	{
+		impl->buffer_copy->SetUniform("HiZLevel", mip_level);
 	}
 
 	void GraphicsManager::SetShowShadowMap(bool show)
