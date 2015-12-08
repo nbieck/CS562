@@ -19,8 +19,8 @@ void main()
 
     ivec2 sample_pos = pix_pos * 2;
 
-    int offset_x = 1;//(width % 2 == 0) ? 1 : 2;
-    int offset_y = 1;//(height % 2 == 0) ? 1 : 2;
+    int offset_x = (width % 2 == 0) ? 1 : 2;
+    int offset_y = (height % 2 == 0) ? 1 : 2;
 
     vec2 a = imageLoad(prev_level, sample_pos).xy;
     vec2 b = imageLoad(prev_level, clamp_to_tex(sample_pos + ivec2(offset_x, 0))).xy;

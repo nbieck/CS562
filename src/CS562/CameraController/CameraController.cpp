@@ -29,7 +29,7 @@ namespace CS562
 		cam_obj_ = std::make_shared<Object>(cam_trans);
 		scene_.GetSceneRoot()->AddChild(cam_obj_);
 		
-		camera_ = std::make_shared<Camera>(cam_obj_->GetGlobalTrans(), 1.f, 150.f, glm::radians(50.f), (static_cast<float>(width) / static_cast<float>(height)));
+		camera_ = std::make_shared<Camera>(cam_obj_->GetGlobalTrans(), 1.f, 300.f, glm::radians(50.f), (static_cast<float>(width) / static_cast<float>(height)));
 		cam_obj_->cam = camera_;
 
 		gfx_.current_cam = camera_;

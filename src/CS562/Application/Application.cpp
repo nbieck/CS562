@@ -91,7 +91,7 @@ namespace CS562
 		cam_control.Init(WIDTH, HEIGHT);
 
 		int show_buffer = DrawBuffers::LightAccum;
-		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)", "AO (horizontal blur)", "AO (final)", "Hi-Z-Buffer"};
+		const char* buffers[] = { "Light Accumulation","Position","Normal","Diffuse","Specular", "Shininess", "AO (no blur)", "AO (horizontal blur)", "AO (final)", "Hi-Z-Buffer", "Reflections"};
 
 		const char* presets[] = { "Custom", "Black Non-Metal", "Gold", "Silver", "Copper", "Iron", "Aluminum" };
 
@@ -130,7 +130,7 @@ namespace CS562
 			{
 				gui.StartGuiWindow();		
 
-				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 10))
+				if (ImGui::Combo("Buffer to show:", &show_buffer, buffers, 11))
 					gfx.SetShownBuffer(show_buffer);
 
 				if (show_buffer == 9)

@@ -36,12 +36,12 @@ namespace CS562
 		std::vector<std::shared_ptr<Material>> mtl;
 
 		ResourceLoader::LoadObjFile(geom, mtl, "sponza.obj");
-
+		 
 		mat = std::make_shared<Material>();
 		mat->k_d = glm::vec3(1, 1, 1);
 		mat->k_s = glm::vec3(0.05, 0.05, 0.05);
 		mat->shininess = 50.f;
-
+		
 		for (auto g : geom)
 		{
 			AddObject(glm::vec3(0), shader, g.first, mtl[g.second], glm::vec3(0.1f));

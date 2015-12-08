@@ -10,6 +10,7 @@ uniform sampler2D AO_NonBlur;
 uniform sampler2D AO_HorizontalBlur;
 uniform sampler2D AO_Final;
 uniform sampler2D HiZBuffer;
+uniform sampler2D Reflection;
 
 uniform int BufferToShow;
 uniform int HiZLevel;
@@ -46,7 +47,12 @@ void main()
     else if (BufferToShow == 8)
         outColor = vec4(vec3(texelFetch(AO_Final, texel_coord, 0).r), 1);
     else if (BufferToShow == 9)
-        outColor = vec4(vec3(pow(textureLod(HiZBuffer, uv, HiZLevel).r, 5.0)), 1);
+        outColor = vec4(vec3(pow(textureLod(HiZBuffer, uv, HiZLevel).r, 10.0)), 1);
+    else if (BufferToShow == 10)
+    {
+        vec4 c = texelFetch(Reflection, texel_coord, 0);
+        outColor = pow(exposure * c / (exposure * c + vec4(1)), vec4(contrast / 2.2));
+    }       
     else
         outColor = vec4(1, 0.5, 0.5, 1);
 }

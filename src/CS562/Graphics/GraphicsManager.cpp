@@ -102,6 +102,12 @@ namespace CS562
 		std::shared_ptr<ShaderProgram> hi_z_comp_mip;
 		int hi_z_mips;
 
+		std::shared_ptr<Framebuffer> reflections_fb;
+		std::shared_ptr<Texture> reflections;
+		std::shared_ptr<ShaderProgram> raytrace_shader;
+
+		std::shared_ptr<ShaderProgram> apply_reflection;
+
 		float exp_c;
 
 		float exposure;
@@ -310,6 +316,7 @@ namespace CS562
 			buffer_copy->SetUniform("AO_HorizontalBlur", 8);
 			buffer_copy->SetUniform("AO_Final", 9);
 			buffer_copy->SetUniform("HiZBuffer", 10);
+			buffer_copy->SetUniform("Reflection", 11);
 			buffer_copy->SetUniform("BufferToShow", 0);
 			buffer_copy->SetUniform("HiZLevel", 0);
 
@@ -459,6 +466,8 @@ namespace CS562
 				auto unbind = hi_z_buffer->Bind(0);
 				hi_z_mips = ResourceLoader::ComputeMipLevels(width, height);
 				hi_z_buffer->AllocateSpace(width, height, TextureFormatInternal::RG32F, hi_z_mips);
+				hi_z_buffer->SetParameter(TextureParameter::MagFilter, TextureParamValue::FilterLinear);
+				hi_z_buffer->SetParameter(TextureParameter::MinFilter, TextureParamValue::FilterNearestMipmapLinear);
 			}
 			hi_z_fb = std::make_shared<Framebuffer>();
 			{
@@ -471,6 +480,18 @@ namespace CS562
 				auto unbind_tex = g_buffer->attachments[Buffers::Depth]->Bind(1);
 				g_buffer->attachments[Buffers::Depth]->SetParameter(TextureParameter::TextureCompareMode, TextureParamValue::None);
 			}
+			reflections = std::make_shared<Texture>();
+			{
+				auto unbind = reflections->Bind(0);
+				reflections->AllocateSpace(width, height, TextureFormatInternal::RGB32F, 1);
+			}
+			reflections_fb = std::make_shared<Framebuffer>();
+			{
+				auto unbind = reflections_fb->Bind();
+				reflections_fb->AttachTexture(Attachments::Color0, reflections);
+			}
+			raytrace_shader = ResourceLoader::LoadShaderProgramFromFile("shaders/raymarch_ssr.shader");
+			apply_reflection = ResourceLoader::LoadShaderProgramFromFile("shaders/apply_reflection.shader");
 		}
 		
 		void GeometryPass()
@@ -764,7 +785,7 @@ namespace CS562
 			}
 		}
 
-		void ScreenSpaceReflect()
+		void ScreenSpaceReflect(const glm::mat4& view, const glm::mat4& proj)
 		{
 			//create Hi-Z
 			{
@@ -802,6 +823,7 @@ namespace CS562
 
 					gl::MemoryBarrier(gl::SHADER_IMAGE_ACCESS_BARRIER_BIT);
 				}
+				gl::MemoryBarrier(gl::TEXTURE_FETCH_BARRIER_BIT);
 			}
 
 			//coverage (if cone trace)
@@ -809,6 +831,45 @@ namespace CS562
 			//blur (if cone trace)
 
 			//raytrace + cone trace
+			{
+				auto unbind_fb = reflections_fb->Bind();
+
+				auto unbind_shader = raytrace_shader->Bind();
+				raytrace_shader->SetUniform("View", view);
+				raytrace_shader->SetUniform("Proj", proj);
+				raytrace_shader->SetUniform("Dims", glm::vec2(width, height));
+				raytrace_shader->SetUniform("MipLevels", static_cast<float>(hi_z_mips));
+				raytrace_shader->SetUniform("near", 1.f);
+				raytrace_shader->SetUniform("far", 300.f);
+
+				auto unbind_tex_0 = g_buffer->attachments[Buffers::LightAccumulation]->Bind(1);
+				auto unbind_tex_1 = g_buffer->attachments[Buffers::Position]->Bind(2);
+				auto unbind_tex_2 = g_buffer->attachments[Buffers::Normal]->Bind(3);
+				auto unbind_tex_3 = hi_z_buffer->Bind(4);
+
+				auto unbind_vao = FSQ->Bind();
+
+				gl::Clear(gl::COLOR_BUFFER_BIT);
+				gl::Disable(gl::DEPTH_TEST);
+				FSQ->Draw(PrimitiveTypes::Triangles, 6);
+				gl::Enable(gl::DEPTH_TEST);
+			}
+
+			//apply calculated reflection to scene
+			{
+				auto unbind_fbo = g_buffer->g_buff->Bind();
+				g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation });
+
+				auto unbind_shader = apply_reflection->Bind();
+				auto unbind_tex = reflections->Bind(1);
+
+				auto unbind_vao = FSQ->Bind();
+				gl::Disable(gl::DEPTH_TEST);
+				gl::Enable(gl::BLEND);
+				FSQ->Draw(PrimitiveTypes::Triangles, 6);
+				gl::Enable(gl::DEPTH_TEST);
+				gl::Disable(gl::BLEND);
+			}
 		}
 
 		void LightingPass()
@@ -851,7 +912,7 @@ namespace CS562
 
 			//SSR
 			if (do_ssr)
-				ScreenSpaceReflect();
+				ScreenSpaceReflect(view, proj);
 
 			auto unbind_buffer = g_buffer->g_buff->Bind();
 			g_buffer->g_buff->EnableAttachments({ Buffers::LightAccumulation, Buffers::Position, Buffers::Normal, Buffers::Diffuse,
@@ -869,6 +930,7 @@ namespace CS562
 			auto unbind_tex2 = ao_horiz->Bind(8);
 			auto unbind_tex3 = ao_final->Bind(9);
 			auto unbind_tex4 = hi_z_buffer->Bind(10);
+			auto unbind_tex5 = reflections->Bind(11);
 
 			auto unbind_shader = buffer_copy->Bind();
 			auto unbind_vao = FSQ->Bind();
@@ -953,10 +1015,11 @@ namespace CS562
 		//AO
 		impl->AOPass();
 
-		impl->LightingPass();
-		
 		if (impl->sky_sphere_img)
 			impl->RenderSkysphere();
+
+		impl->LightingPass();
+		
 
 		impl->CopyBufferPass();
 
