@@ -19,6 +19,8 @@ const int RAYMARCH_START_LEVEL = 1;
 const int RAYMARCH_STOP_LEVEL = 0;
 const int RAYMARCH_MAX_ITERATIONS = 128;
 const float epsilon = 0.00001;
+const float FADE_START = 0.9;
+const float FADE_END = 1;
 
 float linearizeDepth(float d)
 {
@@ -182,7 +184,15 @@ void main()
         discard;
 */
 
+    float dir_fade = dot(view_vec, reflect_v);
+
+    vec2 border = abs(ray_intersection.xy - vec2(0.5)) * 2;
+    float border_fade = 1.0 - clamp((border.x - FADE_START) / (FADE_END - FADE_START), 0, 1);
+    border_fade *= 1.0 - clamp((border.y - FADE_START) / (FADE_END - FADE_START), 0, 1);
+
+    float total_fade = dir_fade * border_fade;
+    
     //do the final color lookup based on where our ray ends up
-    reflectionColor = textureLod(SceneColor, ray_intersection.xy, 0).rgb;
+    reflectionColor = textureLod(SceneColor, ray_intersection.xy, 0).rgb * total_fade;
     //reflectionColor = ray_intersection;
 }
