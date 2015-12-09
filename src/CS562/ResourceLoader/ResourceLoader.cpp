@@ -175,6 +175,8 @@ namespace CS562
 				mat->diffuse_tex = LoadTextureFromFile(material.diffuse_texname);
 				mat->specular_tex = LoadTextureFromFile(material.specular_texname);
 				mat->shininess = material.shininess;
+				mat->k_d = glm::vec3(material.diffuse[0], material.diffuse[1], material.diffuse[2]);
+				mat->k_s = glm::vec3(material.specular[0], material.specular[1], material.specular[2]);
 
 				mats.push_back(mat);
 			}
