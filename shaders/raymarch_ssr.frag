@@ -175,10 +175,12 @@ void main()
     if (any(greaterThan(ray_intersection.xy, vec2(1))) || any(lessThan(ray_intersection.xy, vec2(0))))
         discard;
 
+/*
     //detect false positive intersection
     float actualDepth = textureLod(HiZBuffer, ray_intersection.xy, 0).r;
     if (abs(linearizeDepth(actualDepth) - linearizeDepth(ray_intersection.z)) > dist_threshold)
         discard;
+*/
 
     //do the final color lookup based on where our ray ends up
     reflectionColor = textureLod(SceneColor, ray_intersection.xy, 0).rgb;
