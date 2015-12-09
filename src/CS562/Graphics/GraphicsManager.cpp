@@ -845,6 +845,7 @@ namespace CS562
 				auto unbind_tex_0 = g_buffer->attachments[Buffers::LightAccumulation]->Bind(1);
 				auto unbind_tex_1 = g_buffer->attachments[Buffers::Position]->Bind(2);
 				auto unbind_tex_2 = g_buffer->attachments[Buffers::Normal]->Bind(3);
+				auto unbind_tex_4 = g_buffer->attachments[Buffers::Specular]->Bind(5);
 				auto unbind_tex_3 = hi_z_buffer->Bind(4);
 
 				auto unbind_vao = FSQ->Bind();

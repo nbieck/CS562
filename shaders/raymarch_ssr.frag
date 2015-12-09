@@ -1,6 +1,7 @@
 #version 440
 
 layout(binding = 4) uniform sampler2D HiZBuffer;
+layout(binding = 5) uniform sampler2D SpecColor;
 layout(binding = 2) uniform sampler2D Position;
 layout(binding = 3) uniform sampler2D Normal;
 layout(binding = 1) uniform sampler2D SceneColor;
@@ -21,6 +22,11 @@ const int RAYMARCH_MAX_ITERATIONS = 128;
 const float epsilon = 0.00001;
 const float FADE_START = 0.9;
 const float FADE_END = 1;
+
+vec3 Fresnel(vec3 K_S, vec3 L, vec3 H)
+{
+    return K_S + (1 - K_S) * pow(1 - max(dot(L, H), 0), 5);
+}
 
 float linearizeDepth(float d)
 {
@@ -192,7 +198,10 @@ void main()
 
     float total_fade = dir_fade * border_fade;
     
+    vec3 surface_spec = texelFetch(SpecColor, FragIdx, 0).rgb;
+    
     //do the final color lookup based on where our ray ends up
     reflectionColor = textureLod(SceneColor, ray_intersection.xy, 0).rgb * total_fade;
+    reflectionColor *= Fresnel(surface_spec, norm_v, -view_vec);
     //reflectionColor = ray_intersection;
 }
